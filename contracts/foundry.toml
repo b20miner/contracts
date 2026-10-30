@@ -1,0 +1,31 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+fs_permissions = [
+    { access = "read", path = "test/fixtures" },
+    { access = "read", path = "../artifacts/nft-metadata-v1" },
+    { access = "read-write", path = "../deployments" },
+]
+
+remappings = [
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "base-std/=lib/base-std/src/",
+    "base-std-test/=lib/base-std/test/",
+    "forge-std/=lib/forge-std/src/",
+    # Uniswap V4 (Launchpad): v4-core tag v4.0.0 (the version deployed on
+    # Base), v4-periphery main at 9969eec (LiquidityAmounts only).
+    "@uniswap/v4-core/=lib/v4-core/",
+    "v4-core/=lib/v4-core/src/",
+    "v4-periphery/=lib/v4-periphery/src/",
+    "solmate/=lib/v4-core/lib/solmate/",
+]
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
+# Launchpad invariant suites (test/launchpad/invariant): handlers wrap every
+# call the contracts must accept and record unexpected reverts themselves.
+[invariant]
+runs = 64
+depth = 200
+fail_on_revert = false

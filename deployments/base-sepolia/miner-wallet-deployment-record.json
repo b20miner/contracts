@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "purpose": "B20 Miner mining wallet contract on Base Sepolia, relayed-orders version, factory v11 for the v16 testnet (contracts doc §41): wallets trust the new genesis B20Mining and Launchpad v16 from creation.",
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "broadcastCompletedAt": "2026-10-30T16:00:36Z",
+  "deployer": "0xF035413875Eb19b2cC60CdBC94E3e510A94F2Bbc",
+  "deployerKeystore": "b20-sepolia-deployer-v13",
+  "firstNonce": 18,
+  "blockRange": {
+    "first": 52270836,
+    "last": 52270836
+  },
+  "actualDeploymentCostWei": {
+    "l2Execution": "26455242000000",
+    "l1Data": "249852591197",
+    "total": "26705094591197"
+  },
+  "contracts": {
+    "minerWalletFactory": "0xf4a2F99b482b23b37355fcAcA2398BE2eC97297e",
+    "minerWalletImplementation": "0xEE840F9DF7eA288Ebd6658b90F64B36796060141",
+    "minerRelay": "0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165"
+  },
+  "dependencies": {
+    "b20Mining": "0x1b057567530EA919B76854c39D0A57B05f7664aB",
+    "launchpadFactory": "0x315Ce9b1a8473e3b2D10d4195F15470A66b7848d"
+  },
+  "parameters": {
+    "model": "relayed-orders",
+    "relayOverheadGas": 12000,
+    "l1EnvelopeBytes": 120,
+    "finishGas": 60000,
+    "factoryDelaySeconds": 172800,
+    "eip712": {
+      "name": "B20 MinerWallet",
+      "version": "5"
+    },
+    "keyFloatWei": "0",
+    "admin": false,
+    "upgradeable": false,
+    "walletsPerOwner": 1
+  },
+  "transactions": [
+    {
+      "contract": "MinerWalletFactory",
+      "address": "0xf4a2f99b482b23b37355fcaca2398be2ec97297e",
+      "transactionHash": "0xc5bdc8efd60a9fe8fc02cba5d0e69e6dcd893214ba9c98e975d20acd323111f5",
+      "block": 52270836,
+      "nonce": 18,
+      "status": "success",
+      "alsoCreated": {
+        "MinerWallet": "0xee840f9df7ea288ebd6658b90f64b36796060141"
+      }
+    }
+  ],
+  "verification": {
+    "checksDuringRun": 12,
+    "checksFromLiveChain": 12,
+    "checksNote": "verifyRecorded() on 2026-10-30 from https://sepolia.base.org: 12/12; dry run before the broadcast 12/12; cast: code at factory and implementation, IMPLEMENTATION() = 0xEE84…0141."
+  },
+  "notes": "v16 (owner, 30 Oct 2026) is a new genesis + Launchpad factory, so (as K64/K67) a new wallet factory. v10 and earlier wallets belong to the retired v7 genesis / v15 Launchpad; the apps keep earlier factories withdraw-only.",
+  "supersedes": [
+    {
+      "record": "miner-wallet-deployment-record-v1.json",
+      "minerWalletFactory": "0xeA5678aBbB5eb0Dd94DD28dFbEf9dc812b73763a",
+      "reason": "one key per wallet"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v2.json",
+      "minerWalletFactory": "0x8cB5d609aB44D32362Fc29Fc48ba1F53C7f63cdC",
+      "reason": "explicit deposits skipped key funding on low gas; never used by an app"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v3.json",
+      "minerWalletFactory": "0xa39E6dB4F7Dd88f2b988Af4885d2c9629ed30212",
+      "reason": "0.0001 ETH key float; v4 lowers it to 0.00003 ETH (same code)"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v4.json",
+      "minerWalletFactory": "0x79aF1D2D245a4DE188217403687b9A5384742cB1",
+      "reason": "device keys held a 0.00003 ETH gas float; K62 keys hold no ETH and sign relayed orders"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v5.json",
+      "minerWalletFactory": "0x0059A3B73636B3eFac49bD29D3b337F4e7858f35",
+      "reason": "its wallets trust Launchpad v10; v11 would need proposeFactory + 48 hours per wallet (K64)"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v6.json",
+      "minerWalletFactory": "0xFE6e0208B7DC144b42ae359F36DD6A8E20ED34eA",
+      "reason": "its wallets trust Launchpad v11; v12 would need proposeFactory + 48 hours per wallet (K65 deploy, K64 path)"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v7.json",
+      "minerWalletFactory": "0xe9dE308E7bD314e5196B04Ae0b095e2895375B87",
+      "reason": "its wallets trust Launchpad v12; v13 would need proposeFactory + 48 hours per wallet (K67, K64 path)"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v8.json",
+      "minerWalletFactory": "0x82C5887796bC7cd90609492969C8D8b778938e7D",
+      "reason": "wallets trust Launchpad v13; v14 is a new factory"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v9.json",
+      "minerWalletFactory": "0xfD1F8f70dd8cFacf6ef16C3Aeeb166F40310904b",
+      "reason": "wallets trust Launchpad v14; v15 is a new factory"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v10.json",
+      "minerWalletFactory": "0x4649282b50D5ef3461a41AB0aeDc8632d3960B7D",
+      "reason": "v7 genesis + Launchpad v15; v16 testnet = mainnet code"
+    }
+  ],
+  "reused": {
+    "minerRelay": {
+      "address": "0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165",
+      "record": "miner-wallet-deployment-record-v5.json",
+      "why": "stateless and wallet-agnostic (MINER_RELAY env of DeployMinerWalletSepolia.s.sol)"
+    }
+  }
+}

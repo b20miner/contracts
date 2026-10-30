@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "product": "b20-launchpad-swap-router",
+  "design": "docs/B20_MINER_LAUNCHPAD_WEB_APP_V1.md §4.6zp (option A)",
+  "deployer": "0x91BB49ebbe34b40710C44d5Cd61859e787f849Eb",
+  "checksPassed": 4,
+  "contracts": {
+    "launchpadSwapRouter": "0xb817581D358D6F12a5A789b25CE263694C04eaC3"
+  },
+  "dependencies": {
+    "uniswapV4PoolManager": "0x05E73354cFDd6745C338b50BcFDfA3Aa6fA03408"
+  },
+  "parameters": {
+    "swap": "exact input, one V4 pool, caller pays and receives",
+    "permit2": false,
+    "admin": false,
+    "upgradeable": false,
+    "storage": false
+  }
+}

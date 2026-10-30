@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 2,
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "deployer": "0xF035413875Eb19b2cC60CdBC94E3e510A94F2Bbc",
+  "firstNonce": 0,
+  "tokenStandard": {
+    "id": "base-native-b20-asset",
+    "variant": "ASSET",
+    "factory": "0xB20f000000000000000000000000000000000000",
+    "creationSalt": "0x3c6dc27a84eb726bd9f8359cb03044c8fb92ee7e4453ce5042a4167e0b6bd242",
+    "baseStdVersion": "v1.1.0",
+    "baseStdCommit": "bbfb352e9fe2f67bf6ca33ea4d9a7f2fe0cca20d",
+    "initialAdmin": "0x0000000000000000000000000000000000000000",
+    "supplyCapWei": "100000000000000000000000000000"
+  },
+  "snapshot": {
+    "version": "v1",
+    "block": 51310062,
+    "merkleRoot": "0xa5ebaa9d888946e87b9926ce7ed11e88169a7c9885c55d582f97de045f432e20",
+    "domainSeparator": "0x964fcc7123be7cca1178379e4a8b5b7a87dfea508e50baedb7a6c08c39e96552"
+  },
+  "parameters": {
+    "tgeTimestamp": 1793461293,
+    "miningOpener": "0xF035413875Eb19b2cC60CdBC94E3e510A94F2Bbc",
+    "miningOpenDeadline": 1793979693,
+    "miningDurationSeconds": 86400,
+    "claimPeriodSeconds": 86400,
+    "ethUsdPriceCentsAtDeploy": 223077,
+    "activationFeeWei": "448275707491136",
+    "powTarget": "0x000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "powLeadingZeroBits": 24,
+    "rewardPerProofWei": "312500000000000000000",
+    "miningFeePerProofWei": "26041666666667",
+    "minerPerEth": 12000000,
+    "poolMinerPerEth": 6000000,
+    "bindingModel": "activate-once-open-mining",
+    "tokenomics": "B20_REVENUE_MODEL.md 1.36",
+    "nftQuotaCapWei": "1000000000000000000000000000",
+    "communityReserveWei": "8000000000000000000000000000"
+  },
+  "contracts": {
+    "b20Token": "0xB200000000000000000000Efd99318fFEBD40415",
+    "b20WalletBinding": "0x122477CbCb82f966DF4E0E5d3FFBA40898E0f70A",
+    "b20Mining": "0x1b057567530EA919B76854c39D0A57B05f7664aB",
+    "b20EligibleNFT": "0xa01960e8839B8fEA02B10f72B9C9F8138e6de682",
+    "b20PublicNFT": "0x85b310d0f9181fdE6E834845cEdAD6A61FA8B865",
+    "b20NFTRevenueVault": "0xb0aBDc5cfc0E662D76Af907321Db9eFeA485bf25",
+    "b20ClaimVault": "0x7e59F588F7dF3d2886C4759b92eb3Aab6926baf5",
+    "b20LiquidityFinalizer": "0x64edE020850d00c3B46eABE1c7eb2D6114Fe7Dc8",
+    "minerPool": "0xA5A17F89a601C743b1693C4F78B2FC5330d437D5",
+    "b20TeamVesting": "0xE0607B72a11b43e73656E96D84ce8A6e59630B24",
+    "b20EcosystemVault": "0xCaA47Be4b3b5876552e212e4A83cBA8806AAdE9D",
+    "minerBurner": "0x487b73faADC9f2310f01Da757e139355C8A7d4Fb",
+    "b20CommunityVault": "0x614869D34AF2d7fe370050bC6653b92cD2d847Be"
+  }
+}

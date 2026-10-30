@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Launchpad swap router on Base Sepolia (web app doc \u00a74.6zp option A, \u00a74.6zq; contracts doc \u00a734): one exact-input swap in one Uniswap V4 pool, paid by the caller and paid out to the caller. A sale is a plain ERC-20 approve of the router once per token, then the swap (2 transactions the first time, 1 after, no Permit2 signature; EIP-7702 accounts included). Tokens are pulled only from msg.sender, only the amount the swap used, inside the router's own unlock, straight to the PoolManager; unused ETH is refunded. No owner, no admin, no upgrade, no storage, no arbitrary calls.",
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "broadcastCompletedAt": "2026-10-18T19:06:16Z",
+  "deployer": "0x91BB49ebbe34b40710C44d5Cd61859e787f849Eb",
+  "deployerKeystore": "b20-sepolia-deployer-v12",
+  "nonce": 109,
+  "block": 48291044,
+  "transaction": "0x041c6b5ea08e966e853782e28f952d0ffa6485179de1d6df62911c1754f7cea4",
+  "gasUsed": 1457037,
+  "actualDeploymentCostWei": {
+    "l2Execution": 8742222000000,
+    "l1Data": 3094,
+    "total": 8742222003094
+  },
+  "contracts": {
+    "launchpadSwapRouter": "0xb817581D358D6F12a5A789b25CE263694C04eaC3"
+  },
+  "dependencies": {
+    "uniswapV4PoolManager": "0x05E73354cFDd6745C338b50BcFDfA3Aa6fA03408"
+  },
+  "checks": {
+    "script": "4/4 in the run and from the live chain (verifyRecorded)",
+    "sourcify": "exact_match",
+    "blockscout": "verified"
+  },
+  "scriptOutput": "swap-router-deployment.json"
+}
