@@ -1,29 +1,29 @@
 {
   "schemaVersion": 1,
-  "purpose": "B20 Miner mining wallet contract on Base Sepolia, relayed-orders version, factory v11 for the v16 testnet (contracts doc §41): wallets trust the new genesis B20Mining and Launchpad v16 from creation.",
+  "purpose": "B20 Miner mining wallet contract on Base Sepolia, relayed-orders version, factory v12 (31 Oct 2026): wallets trust the genesis with the audit H-1-fixed MinerPool (its B20Mining) and Launchpad v17 from creation.",
   "network": "base-sepolia",
   "chainId": 84532,
-  "broadcastCompletedAt": "2026-10-30T16:00:36Z",
-  "deployer": "0xF035413875Eb19b2cC60CdBC94E3e510A94F2Bbc",
-  "deployerKeystore": "b20-sepolia-deployer-v13",
+  "broadcastCompletedAt": "2026-10-31T17:11:57Z",
+  "deployer": "0xF9495886D18dE9bc9c54Be8770872fDd900B74cf",
+  "deployerKeystore": "b20-sepolia-deployer-v14",
   "firstNonce": 18,
   "blockRange": {
-    "first": 52270836,
-    "last": 52270836
+    "first": 52724244,
+    "last": 52724244
   },
   "actualDeploymentCostWei": {
-    "l2Execution": "26455242000000",
-    "l1Data": "249852591197",
-    "total": "26705094591197"
+    "l2Execution": "26455170000000",
+    "l1Data": "8270",
+    "total": "26455170008270"
   },
   "contracts": {
-    "minerWalletFactory": "0xf4a2F99b482b23b37355fcAcA2398BE2eC97297e",
-    "minerWalletImplementation": "0xEE840F9DF7eA288Ebd6658b90F64B36796060141",
+    "minerWalletFactory": "0xe9A014A76c3A44c3bcda1954521E81648aF00608",
+    "minerWalletImplementation": "0x4e5bC558a9897C95346D219dB9F845e11aA92e93",
     "minerRelay": "0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165"
   },
   "dependencies": {
-    "b20Mining": "0x1b057567530EA919B76854c39D0A57B05f7664aB",
-    "launchpadFactory": "0x315Ce9b1a8473e3b2D10d4195F15470A66b7848d"
+    "b20Mining": "0x95442C94D2Ff303B115Ee029Ccd94D9B8C7Ca6A2",
+    "launchpadFactory": "0x7e8220d399eeA7EE2b5c00152C12F692de6eeF7A"
   },
   "parameters": {
     "model": "relayed-orders",
@@ -43,22 +43,22 @@
   "transactions": [
     {
       "contract": "MinerWalletFactory",
-      "address": "0xf4a2f99b482b23b37355fcaca2398be2ec97297e",
-      "transactionHash": "0xc5bdc8efd60a9fe8fc02cba5d0e69e6dcd893214ba9c98e975d20acd323111f5",
-      "block": 52270836,
+      "address": "0xe9a014a76c3a44c3bcda1954521e81648af00608",
+      "transactionHash": "0xac3327b7c6e7aafe992e110aae962092a9a6b65d0602a22f557af544a27000e6",
+      "block": 52724244,
       "nonce": 18,
       "status": "success",
       "alsoCreated": {
-        "MinerWallet": "0xee840f9df7ea288ebd6658b90f64b36796060141"
+        "MinerWallet": "0x4e5bC558a9897C95346D219dB9F845e11aA92e93"
       }
     }
   ],
   "verification": {
     "checksDuringRun": 12,
     "checksFromLiveChain": 12,
-    "checksNote": "verifyRecorded() on 2026-10-30 from https://sepolia.base.org: 12/12; dry run before the broadcast 12/12; cast: code at factory and implementation, IMPLEMENTATION() = 0xEE84…0141."
+    "checksNote": "verifyRecorded() on 2026-10-31 from https://sepolia.base.org: 12/12; dry run before the broadcast 12/12."
   },
-  "notes": "v16 (owner, 30 Oct 2026) is a new genesis + Launchpad factory, so (as K64/K67) a new wallet factory. v10 and earlier wallets belong to the retired v7 genesis / v15 Launchpad; the apps keep earlier factories withdraw-only.",
+  "notes": "New genesis (audit H-1-fixed MinerPool) + Launchpad v17 (31 Oct 2026), so a new wallet factory. v11 and earlier wallets belong to retired genesis / Launchpad versions; the apps keep earlier factories withdraw-only.",
   "supersedes": [
     {
       "record": "miner-wallet-deployment-record-v1.json",
@@ -109,6 +109,11 @@
       "record": "miner-wallet-deployment-record-v10.json",
       "minerWalletFactory": "0x4649282b50D5ef3461a41AB0aeDc8632d3960B7D",
       "reason": "v7 genesis + Launchpad v15; v16 testnet = mainnet code"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v11.json",
+      "minerWalletFactory": "0xf4a2F99b482b23b37355fcAcA2398BE2eC97297e",
+      "reason": "v16 genesis retired (MinerPool without the H-1 fix)"
     }
   ],
   "reused": {

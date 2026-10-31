@@ -4,16 +4,16 @@
   "chainId": 84532,
   "product": "b20-miner-wallet",
   "design": "docs/B20_MINER_LAUNCHPAD_CONTRACTS_V1.md 1.34 §29 (K59-K62), §31 (K64)",
-  "deployer": "0xF035413875Eb19b2cC60CdBC94E3e510A94F2Bbc",
+  "deployer": "0xF9495886D18dE9bc9c54Be8770872fDd900B74cf",
   "checksPassed": 12,
   "contracts": {
-    "minerWalletFactory": "0xf4a2F99b482b23b37355fcAcA2398BE2eC97297e",
-    "minerWalletImplementation": "0xEE840F9DF7eA288Ebd6658b90F64B36796060141",
+    "minerWalletFactory": "0xe9A014A76c3A44c3bcda1954521E81648aF00608",
+    "minerWalletImplementation": "0x4e5bC558a9897C95346D219dB9F845e11aA92e93",
     "minerRelay": "0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165"
   },
   "dependencies": {
-    "b20Mining": "0x1b057567530EA919B76854c39D0A57B05f7664aB",
-    "launchpadFactory": "0x315Ce9b1a8473e3b2D10d4195F15470A66b7848d"
+    "b20Mining": "0x95442C94D2Ff303B115Ee029Ccd94D9B8C7Ca6A2",
+    "launchpadFactory": "0x7e8220d399eeA7EE2b5c00152C12F692de6eeF7A"
   },
   "parameters": {
     "model": "relayed-orders",

@@ -73,6 +73,15 @@ contract MinerPoolTest is Test {
         liq = pool.open{value: eth}(m);
     }
 
+    /// After `open`: one `WINDOW` later a flush closes the opening's window,
+    /// so the anchor has a previous window and flushes may add buy support.
+    function _firstWindow() internal {
+        vm.warp(block.timestamp + pool.WINDOW());
+        vm.roll(block.number + 1);
+        pool.flush();
+        vm.roll(block.number + 1);
+    }
+
     function _price() internal view returns (uint160 p, int24 tick) {
         (p, tick,,) = IPoolManager(address(pm)).getSlot0(pool.poolKey().toId());
     }
@@ -191,6 +200,7 @@ contract MinerPoolTest is Test {
 
     function test_flush_burnsSaleFeesAndKeepsBuyFees() public {
         _open(100 ether);
+        _firstWindow();
         _sell(trader, 60_000_000e18); // 0.3% fee in MINER
         _buy(trader, 10 ether); // 0.3% fee in ETH
         uint256 supplyBefore = miner.totalSupply();
@@ -234,9 +244,10 @@ contract MinerPoolTest is Test {
 
     function test_flush_feesOnBuySupportRangesAlsoCollected() public {
         _open(10 ether);
+        _firstWindow();
         vm.deal(address(this), 5 ether);
         pool.depositMinerLiquidityEth{value: 5 ether}();
-        pool.flush(); // 5 ETH buy support just above the tick
+        pool.flush(); // buy support just above the tick (capped at MAX_BID_BPS of the in-range ETH)
         _sell(trader, 120_000_000e18); // crosses into the buy support
         uint256 before = miner.totalSupply();
         pool.flush();
@@ -265,6 +276,149 @@ contract MinerPoolTest is Test {
             pool.poolKey().toId(), address(pool), TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 0
         );
         assertEq(after_, liquidity, "flush never removes liquidity");
+    }
+
+    // ---------------------------------------------------------------
+    // buy support is anchored (audit H-1): no sandwich through `flush`
+    // ---------------------------------------------------------------
+
+    address attacker = makeAddr("attacker");
+
+    /// Pool opened with 100 ETH, first window closed, `waiting` ETH here.
+    function _anchoredPool(uint256 waiting) internal {
+        vm.deal(address(this), 200 ether);
+        _open(100 ether);
+        _firstWindow();
+        pool.depositMinerLiquidityEth{value: waiting}();
+        vm.prank(attacker);
+        miner.approve(address(swapper), type(uint256).max);
+    }
+
+    /// Push the price down with `push` ETH, flush, sell everything back; returns the ETH result.
+    function _sandwich(uint256 push) internal returns (int256) {
+        vm.deal(attacker, attacker.balance + push);
+        uint256 eth0 = attacker.balance;
+        _buy(attacker, push);
+        pool.flush();
+        _sell(attacker, miner.balanceOf(attacker));
+        return int256(attacker.balance) - int256(eth0);
+    }
+
+    function _pushes() internal pure returns (uint256[6] memory) {
+        return [uint256(1 ether), 3 ether, 10 ether, 30 ether, 100 ether, 1_000 ether];
+    }
+
+    /// The audit PoC: before the fix, 60 ETH of push took 3.7 of 10 waiting ETH.
+    function test_h1_sameTransactionSandwichLoses() public {
+        uint256[6] memory pushes = _pushes();
+        for (uint256 i; i < pushes.length; ++i) {
+            uint256 snap = vm.snapshotState();
+            _anchoredPool(10 ether);
+            assertLt(_sandwich(pushes[i]), 0, "push, flush, sell must lose money");
+            vm.revertToState(snap);
+        }
+    }
+
+    /// Worst case: nobody else flushes for whole windows, so the attacker's
+    /// own pushed samples become the anchor. Each later round still loses:
+    /// one flush adds at most `bidCap`, far less than the push's fees.
+    function test_h1_attackerOnlyFlusherStillLoses() public {
+        uint256[6] memory pushes = _pushes();
+        for (uint256 i; i < pushes.length; ++i) {
+            uint256 snap = vm.snapshotState();
+            _anchoredPool(50 ether);
+            vm.warp(block.timestamp + pool.WINDOW());
+            vm.roll(block.number + 1);
+            _sandwich(pushes[i]); // a window with only the attacker's sample
+            for (uint256 k; k < 3; ++k) {
+                vm.warp(block.timestamp + pool.WINDOW() / 2);
+                vm.roll(block.number + 1);
+                assertLt(_sandwich(pushes[i]), 0, "each round must lose money");
+            }
+            vm.revertToState(snap);
+        }
+    }
+
+    function test_flush_noBidBeforeTheFirstWindowCloses() public {
+        vm.deal(address(this), 1 ether);
+        _open(100 ether);
+        uint256 added = pool.totalEthAdded();
+        pool.depositMinerLiquidityEth{value: 1 ether}();
+        vm.roll(block.number + 1);
+        pool.flush();
+        assertEq(pool.totalEthAdded(), added, "no previous window yet");
+        assertFalse(pool.hasPrevWindow());
+    }
+
+    function test_flush_defersBidFarFromTheAnchor() public {
+        _anchoredPool(10 ether);
+        uint256 added = pool.totalEthAdded();
+        _buy(trader, 20 ether); // well over MAX_DRIFT below the anchor
+        (, int24 tick) = _price();
+        vm.expectEmit(address(pool));
+        emit MinerPool.BidDeferred(tick, pool.windowMax());
+        pool.flush();
+        assertEq(pool.totalEthAdded(), added, "no bid while the price is off the anchor");
+        assertGe(address(pool).balance, 10 ether, "the ETH waits");
+    }
+
+    function test_flush_capsEachBidAndOncePerBlock() public {
+        _anchoredPool(10 ether);
+        uint256 added = pool.totalEthAdded();
+        (, int24 tick) = _price();
+        uint256 cap = pool.bidCap(tick);
+        assertApproxEqRel(cap, 100 ether * pool.MAX_BID_BPS() / 10_000, 1e15, "cap = 0.25% of the opening ETH");
+        pool.flush();
+        uint256 first = pool.totalEthAdded() - added;
+        assertGt(first, 0);
+        assertLe(first, cap);
+        pool.flush();
+        assertEq(pool.totalEthAdded() - added, first, "one bid per block");
+        vm.roll(block.number + 1);
+        pool.flush();
+        assertGt(pool.totalEthAdded() - added, first, "the next block adds more");
+    }
+
+    function test_anchor_isTheHighestRecentSample() public {
+        _anchoredPool(1 ether);
+        (, int24 honest) = _price();
+        _buy(trader, 5 ether); // the price goes down: a lower tick
+        pool.flush();
+        assertEq(pool.windowMax(), honest, "a lower sample cannot lower the anchor");
+        _sell(trader, miner.balanceOf(trader) / 100);
+        (, int24 higher) = _price();
+        assertGt(higher, honest);
+        pool.flush();
+        assertEq(pool.windowMax(), higher, "a higher sample raises it");
+    }
+
+    function test_anchor_followsTheMarketAfterTwoWindows() public {
+        _anchoredPool(1 ether);
+        _buy(trader, 20 ether); // a real move down, over MAX_DRIFT
+        (, int24 moved) = _price();
+        uint256 added = pool.totalEthAdded();
+        pool.flush(); // deferred
+        assertEq(pool.totalEthAdded(), added);
+        for (uint256 k; k < 2; ++k) {
+            vm.warp(block.timestamp + pool.WINDOW());
+            vm.roll(block.number + 1);
+            pool.flush();
+        }
+        assertEq(pool.windowMax(), moved);
+        assertEq(pool.prevWindowMax(), moved, "the old high has aged out");
+        assertGt(pool.totalEthAdded(), added, "bids resume at the new price");
+        (int24 lower,) = pool.ranges(pool.rangeCount() - 1);
+        assertGt(lower, moved, "buy support stays wholly on the ETH side of the price");
+    }
+
+    function test_anchor_staleWindowIsDropped() public {
+        _anchoredPool(1 ether);
+        vm.warp(block.timestamp + 3 * pool.WINDOW()); // a quiet spell
+        vm.roll(block.number + 1);
+        uint256 added = pool.totalEthAdded();
+        pool.flush();
+        assertFalse(pool.hasPrevWindow(), "the old window is too old to count");
+        assertEq(pool.totalEthAdded(), added);
     }
 
     // ---------------------------------------------------------------

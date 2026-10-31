@@ -54,6 +54,14 @@ contract MinerPoolForkTest is Test {
         liq = pool.open{value: OPENING_ETH}(m);
     }
 
+    /// One `WINDOW` after the opening a flush closes its window; then flushes add buy support.
+    function _firstWindow() internal {
+        vm.warp(block.timestamp + pool.WINDOW());
+        vm.roll(block.number + 1);
+        pool.flush();
+        vm.roll(block.number + 1);
+    }
+
     function _tick() internal view returns (uint160 p, int24 tick) {
         (p, tick,,) = PM.getSlot0(pool.poolKey().toId());
     }
@@ -71,6 +79,7 @@ contract MinerPoolForkTest is Test {
 
     function test_buysAndSalesThroughOurRouter_saleFeesBurned_buyFeesBackIn() public {
         _open();
+        _firstWindow();
         PoolKey memory key = pool.poolKey();
 
         vm.prank(trader);
@@ -100,6 +109,7 @@ contract MinerPoolForkTest is Test {
 
     function test_launchpadEthBecomesBuySupportBelowThePrice() public {
         _open();
+        _firstWindow();
         uint256 dust = address(pool).balance;
         vm.deal(address(0xFEE), 1 ether);
         vm.prank(address(0xFEE));
@@ -107,7 +117,10 @@ contract MinerPoolForkTest is Test {
         assertEq(address(pool).balance - dust, 0.5 ether);
         uint256 addedBefore = pool.totalEthAdded();
         pool.flush();
-        assertApproxEqAbs(pool.totalEthAdded() - addedBefore, 0.5 ether + dust, 1e6);
+        // at most `bidCap` per flush (0.25% of the opening ETH); the rest waits
+        uint256 cap = pool.bidCap(pool.windowMax());
+        assertApproxEqAbs(pool.totalEthAdded() - addedBefore, cap, 1e6);
+        assertApproxEqAbs(address(pool).balance, 0.5 ether + dust - cap, 1e6);
 
         // a large sale walks into the support: the ETH buys MINER back
         PoolKey memory key = pool.poolKey();

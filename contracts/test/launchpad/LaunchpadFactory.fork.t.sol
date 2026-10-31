@@ -76,6 +76,15 @@ contract LaunchpadFactoryForkTest is Test {
 
     receive() external payable {}
 
+    /// The keeper's rhythm (audit H-1): `MinerPool` adds buy support only
+    /// with a sample in the previous `WINDOW`, so flush twice a window apart.
+    function _keeperFlush() internal {
+        minerPool.flush();
+        vm.warp(block.timestamp + minerPool.WINDOW());
+        vm.roll(block.number + 1);
+        minerPool.flush();
+    }
+
     function setUp() public {
         vm.createSelectFork("https://sepolia.base.org");
         _etchReferenceB20();
@@ -202,7 +211,7 @@ contract LaunchpadFactoryForkTest is Test {
         assertEq(TREASURY.balance - treasuryBefore, CREATION_FEE / 2);
         assertEq(address(minerPool).balance - minerPoolBefore, CREATION_FEE - CREATION_FEE / 2);
         uint256 addedBefore = minerPool.totalEthAdded();
-        minerPool.flush();
+        _keeperFlush();
         assertLe(address(minerPool).balance, 1e6); // rounding dust waits for the next flush
         assertApproxEqAbs(
             minerPool.totalEthAdded() - addedBefore, minerPoolBefore + CREATION_FEE - CREATION_FEE / 2, 1e6
@@ -344,13 +353,14 @@ contract LaunchpadFactoryForkTest is Test {
         vm.warp(block.timestamp + 20); // after the opening anti-snipe window (K40)
         sw.swap{value: 0.1 ether}(key, true, 0.1 ether);
 
-        minerPool.flush(); // the creation fee's half, so only the sweep is left
+        _keeperFlush(); // the creation fee's half, so only the sweep is left
         // the MINER-liquidity 20% of the 1% ETH fee (K69), split in the swap,
         // waits in the MINER pool until someone flushes it into buy support
         uint256 dust = address(minerPool).balance; // what the last flush could not place
         LaunchpadHook(locker.HOOK()).sweep();
         assertEq(address(minerPool).balance - dust, 0.0002 ether);
         uint256 addedBefore = minerPool.totalEthAdded();
+        vm.roll(block.number + 1); // one buy-support addition per block
         minerPool.flush();
         assertApproxEqAbs(minerPool.totalEthAdded() - addedBefore, 0.0002 ether + dust, 1e6);
     }

@@ -32,40 +32,42 @@ base-forge test --no-match-path "test/**/*.fork.t.sol"
 ```
 
 The fork tests (`*.fork.t.sol`) read live Base Sepolia and Base state through
-the public RPCs; run them with `base-forge test`.
+the public RPCs. They place mock B20 code at the native B20 address, which
+`base-forge` refuses, so run them with stock Foundry:
+`forge test --match-path "test/**/*.fork.t.sol"`.
 
 ## Base Sepolia deployment
 
-Test network deployment of 30 October 2026. On Base Sepolia the mining and
+Test network deployment of 31 October 2026. On Base Sepolia the mining and
 claim windows are 1 day each; on Base they are 15 days.
 
 | Contract | Address |
 | --- | --- |
-| MINER | `0xB200000000000000000000Efd99318fFEBD40415` |
-| B20Mining | `0x1b057567530EA919B76854c39D0A57B05f7664aB` |
-| B20WalletBinding | `0x122477CbCb82f966DF4E0E5d3FFBA40898E0f70A` |
-| B20EligibleNFT | `0xa01960e8839B8fEA02B10f72B9C9F8138e6de682` |
-| B20PublicNFT | `0x85b310d0f9181fdE6E834845cEdAD6A61FA8B865` |
-| B20NFTRevenueVault | `0xb0aBDc5cfc0E662D76Af907321Db9eFeA485bf25` |
-| B20ClaimVault | `0x7e59F588F7dF3d2886C4759b92eb3Aab6926baf5` |
-| B20LiquidityFinalizer | `0x64edE020850d00c3B46eABE1c7eb2D6114Fe7Dc8` |
-| MinerPool | `0xA5A17F89a601C743b1693C4F78B2FC5330d437D5` |
-| MinerBurner | `0x487b73faADC9f2310f01Da757e139355C8A7d4Fb` |
-| B20TeamVesting | `0xE0607B72a11b43e73656E96D84ce8A6e59630B24` |
-| B20EcosystemVault | `0xCaA47Be4b3b5876552e212e4A83cBA8806AAdE9D` |
-| B20CommunityVault | `0x614869D34AF2d7fe370050bC6653b92cD2d847Be` |
-| LaunchpadFactory | `0x315Ce9b1a8473e3b2D10d4195F15470A66b7848d` |
-| MiningCampaign (implementation) | `0x061c6b9C4Bac57F4A7d89B3541609EFBf99E526D` |
-| CampaignPool (implementation) | `0x92b1391Ad19C937f7087156141401F930041E76D` |
-| PositionLocker | `0x35F44EDABcc145F9BB46f98eBdc38d4828F73B4C` |
-| LaunchpadHook | `0x08d1338ac4baf03dd47Ae94E04310b4819AD60Cc` |
+| MINER | `0xb200000000000000000000c9FEC3181Ce714dEa9` |
+| B20Mining | `0x95442C94D2Ff303B115Ee029Ccd94D9B8C7Ca6A2` |
+| B20WalletBinding | `0x9Ab79D1B5c0eC5Ba9f4C9B9C5e29F9F9dB6e8666` |
+| B20EligibleNFT | `0x602EB357c534bFE4b0Fb345e00DC7dDD7f7249cE` |
+| B20PublicNFT | `0x6262B87062D6A866a28DA1B8c94B0d39597Cb3a2` |
+| B20NFTRevenueVault | `0xf53B2668c6335441b951FF270F4528c3A09e8b64` |
+| B20ClaimVault | `0xeec4190f14F8F309d1E7FFC41080B72Bb6DEcb6e` |
+| B20LiquidityFinalizer | `0xEA4fd0079A5B5b0824bc5576B1Bc26E3Baa15E5a` |
+| MinerPool | `0x6d119d233A438c8322b305a24B843186b5409798` |
+| MinerBurner | `0xef5A4DEA639E2c3f77F4BA0e63A97Eb5cd9dEc33` |
+| B20TeamVesting | `0xD6A865D52Cb75c523E9F5521E4f22cE7343c252e` |
+| B20EcosystemVault | `0x34Ef0be6c90fde87c3B4695469D1Ab74ca75961C` |
+| B20CommunityVault | `0x4c16Df187437BcDa50a6a75Acb5ac0890B708726` |
+| LaunchpadFactory | `0x7e8220d399eeA7EE2b5c00152C12F692de6eeF7A` |
+| MiningCampaign (implementation) | `0x5E01251E46c2DC733e76F2ccB9E9375d61446222` |
+| CampaignPool (implementation) | `0x7dcE57938be7a94eCf68950dc243aC7454db7dD3` |
+| PositionLocker | `0xd579964df76f722dB7c480aE13D87180DCFA06ff` |
+| LaunchpadHook | `0x372557A2E0da7cc11FB6d4788720540ee19420cC` |
 | LaunchpadSwapRouter | `0xb817581D358D6F12a5A789b25CE263694C04eaC3` |
-| MinerWalletFactory | `0xf4a2F99b482b23b37355fcAcA2398BE2eC97297e` |
-| MinerWallet (implementation) | `0xEE840F9DF7eA288Ebd6658b90F64B36796060141` |
+| MinerWalletFactory | `0xe9A014A76c3A44c3bcda1954521E81648aF00608` |
+| MinerWallet (implementation) | `0x4e5bC558a9897C95346D219dB9F845e11aA92e93` |
 | MinerRelay | `0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165` |
 
 The source of these contracts is verified on [Sourcify](https://sourcify.dev).
-The tag `sepolia-v16` marks the commit they were deployed from.
+The tag `sepolia-v17` marks the commit they were deployed from.
 
 To rebuild the deployed bytecode (metadata hash included), compile the
 contracts alone with solc 0.8.35. A full `base-forge build` also compiles the

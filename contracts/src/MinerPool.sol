@@ -36,10 +36,23 @@ interface IMinerBurnerSink {
 ///   half of each creation fee) arrives as plain ETH or through
 ///   `depositMinerLiquidityEth`; before `open` it waits here.
 /// - `flush` (anyone; the relay keeper does it regularly) collects the
-///   pool's 0.3% fees. The ETH side — fees of buys plus every waiting ETH —
+///   pool's 0.3% fees. The ETH side — fees of buys plus the waiting ETH —
 ///   goes back in as buy support just below the price. The MINER side —
 ///   fees of sales — is never added back: it goes to `MinerBurner` and is
 ///   burned (`FeesBurned`). This is MINER's only ongoing burn.
+///
+/// Buy support is placed against an anchor, not the spot price alone
+/// (audit H-1, `docs/CONTRACT_SECURITY_AUDIT_V16.md`): `flush` is open to
+/// anyone, so one transaction could push the price down, flush, and sell
+/// into the new bid. Every `flush` samples the tick; the anchor is the
+/// **highest** tick (MINER cheapest) sampled in the current and the previous
+/// `WINDOW`. Pushing the price down cannot lower a maximum, so a bid never
+/// sits closer to the price than an honest sample allows. A bid is placed
+/// only when the previous window has a sample, while the spot tick is
+/// within `MAX_DRIFT` of the anchor, with at most `MAX_BID_BPS` of the ETH
+/// the opening position holds (the smaller of its ETH at the opening and at
+/// the anchor) and once per block; the rest waits. The keeper
+/// flushes in every window, so the anchor always holds an honest sample.
 ///
 /// The V4 pool key is public, so before `open` anyone may initialize it at
 /// another price or add liquidity there. `open` first moves the price back
@@ -63,6 +76,13 @@ contract MinerPool is IMinerLiquiditySink, IUnlockCallback, ReentrancyGuard {
     /// ticks (a price halving), so additions at the same price merge.
     int24 public constant GRID = 600;
     int24 public constant BAND = 6_960;
+    /// @notice Length of a sampling window; the anchor covers two.
+    uint256 public constant WINDOW = 10 minutes;
+    /// @notice No bid while the spot tick is further than this from the anchor (one grid step, ~6%).
+    int24 public constant MAX_DRIFT = 600;
+    /// @notice ETH added per flush: at most this share of the opening position's ETH (see `bidCap`).
+    uint256 public constant MAX_BID_BPS = 25;
+    uint256 internal constant BPS = 10_000;
 
     /// @notice Uniswap's V4 PoolManager on Base Mainnet and Base Sepolia.
     address public constant BASE_MAINNET_POOL_MANAGER = 0x498581fF718922c3f8e6A244956aF099B2652b2b;
@@ -93,6 +113,17 @@ contract MinerPool is IMinerLiquiditySink, IUnlockCallback, ReentrancyGuard {
     uint256 public totalFeesBurned;
     /// @notice ETH (buy fees and the Launchpad's share) added back as buy support.
     uint256 public totalEthAdded;
+    /// @notice ETH and liquidity of the opening full-range position (they size `bidCap`).
+    uint256 public openingEth;
+    uint128 public openingLiquidity;
+    /// @notice Highest tick sampled in the current window, which began at `windowStart`.
+    int24 public windowMax;
+    uint64 public windowStart;
+    /// @notice Highest tick of the window before; usable while `hasPrevWindow`.
+    int24 public prevWindowMax;
+    bool public hasPrevWindow;
+    /// @notice Block of the last bid added by `flush` (one per block).
+    uint64 public lastBidBlock;
 
     enum Action {
         Open,
@@ -115,6 +146,8 @@ contract MinerPool is IMinerLiquiditySink, IUnlockCallback, ReentrancyGuard {
     event Flushed(uint256 ethFees, uint256 minerFees, uint256 ethAdded, int24 bidLower);
     /// @notice MINER from the pool's fees burned through `MinerBurner`.
     event FeesBurned(uint256 amount, uint256 totalFeesBurned);
+    /// @notice The spot tick was too far from the anchor: the ETH waits for a later flush.
+    event BidDeferred(int24 tick, int24 anchorTick);
 
     constructor(address poolManager, address miner, address burner, address finalizer) {
         if (poolManager == address(0) || miner == address(0) || burner == address(0) || finalizer == address(0)) {
@@ -197,7 +230,7 @@ contract MinerPool is IMinerLiquiditySink, IUnlockCallback, ReentrancyGuard {
         if (msg.sender != address(POOL_MANAGER)) revert NotPoolManager();
         (Action action, uint256 eth, uint256 miner) = abi.decode(data, (Action, uint256, uint256));
         if (action == Action.Open) return abi.encode(_open(eth, miner));
-        _flush();
+        _flush(false);
         return "";
     }
 
@@ -211,7 +244,12 @@ contract MinerPool is IMinerLiquiditySink, IUnlockCallback, ReentrancyGuard {
         // Rounding dust: ETH stays for the `flush` below (buy support), MINER
         // left over is part of the unused liquidity reserve and is burned.
         emit Opened(openingTick, liq, ethIn, minerIn, miner - minerIn, reset);
-        _flush();
+        openingEth = ethIn;
+        openingLiquidity = liq;
+        // The opening tick is the first sample.
+        windowMax = openingTick;
+        windowStart = uint64(block.timestamp);
+        _flush(true);
     }
 
     /// @dev Initializes the pool at the opening price, or moves it back there
@@ -289,7 +327,9 @@ contract MinerPool is IMinerLiquiditySink, IUnlockCallback, ReentrancyGuard {
         return (eth, miner);
     }
 
-    function _flush() internal {
+    /// @dev `opening`: the price was just set by `open` itself, so the waiting
+    /// ETH may go in whole (still only near the opening price).
+    function _flush(bool opening) internal {
         PoolKey memory key = poolKey();
         // 1. collect: a zero change on every range pays its fees to this contract
         uint256 ethFees;
@@ -306,13 +346,55 @@ contract MinerPool is IMinerLiquiditySink, IUnlockCallback, ReentrancyGuard {
             totalFeesBurned += minerFees;
             emit FeesBurned(minerFees, totalFeesBurned);
         }
-        // 3. every ETH held goes in just below the price as buy support
+        // 3. ETH held goes in just below the anchored price as buy support
         (, int24 tick,,) = POOL_MANAGER.getSlot0(key.toId());
-        int24 bidLower = _floor(tick, GRID) + GRID;
-        uint256 ethIn = _addBid(key, bidLower, address(this).balance);
-        _pay(key, ethIn, 0);
-        totalEthAdded += ethIn;
+        // At the opening the price was just set here: measure against the target.
+        int24 anchor = opening ? TickMath.getTickAtSqrtPrice(openingSqrtPriceX96()) : _sample(tick);
+        uint256 ethIn;
+        int24 bidLower;
+        if ((!opening && !hasPrevWindow) || tick > anchor + MAX_DRIFT || tick < anchor - MAX_DRIFT) {
+            emit BidDeferred(tick, anchor);
+        } else {
+            // Never nearer the price than the anchor: a push down cannot pull the bid closer.
+            bidLower = _floor(tick > anchor ? tick : anchor, GRID) + GRID;
+            uint256 budget = address(this).balance;
+            if (!opening) budget = lastBidBlock == block.number ? 0 : Math.min(budget, bidCap(anchor));
+            ethIn = _addBid(key, bidLower, budget);
+            if (ethIn > 0) {
+                if (!opening) lastBidBlock = uint64(block.number);
+                _pay(key, ethIn, 0);
+                totalEthAdded += ethIn;
+            }
+        }
         emit Flushed(ethFees, minerFees, ethIn, bidLower);
+    }
+
+    /// @dev Records `tick` and returns the anchor: the highest tick of the
+    /// current and the previous window. A window ends `WINDOW` after its
+    /// first sample; the previous one counts only if it ended less than
+    /// `WINDOW` ago (no stale samples after a long quiet spell).
+    function _sample(int24 tick) internal returns (int24) {
+        uint256 start = windowStart;
+        if (block.timestamp >= start + WINDOW) {
+            hasPrevWindow = block.timestamp < start + 2 * WINDOW;
+            prevWindowMax = windowMax;
+            windowMax = tick;
+            windowStart = uint64(block.timestamp);
+        } else if (tick > windowMax) {
+            windowMax = tick;
+        }
+        int24 anchor = windowMax;
+        if (hasPrevWindow && prevWindowMax > anchor) anchor = prevWindowMax;
+        return anchor;
+    }
+
+    /// @notice Most ETH one `flush` adds: `MAX_BID_BPS` of the opening
+    /// position's ETH, valued at the opening or at `anchor`, whichever is
+    /// less. A trade cannot raise it: the opening amount is fixed, and a
+    /// lower anchor (an attacker's push) only makes the second value larger.
+    function bidCap(int24 anchor) public view returns (uint256) {
+        uint256 atAnchor = Math.mulDiv(uint256(openingLiquidity), 1 << 96, TickMath.getSqrtPriceAtTick(anchor));
+        return Math.min(openingEth, atAnchor) * MAX_BID_BPS / BPS;
     }
 
     /// @dev Everything MINER this contract holds outside the pool (opening
