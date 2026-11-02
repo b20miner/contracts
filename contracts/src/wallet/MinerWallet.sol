@@ -82,6 +82,19 @@ contract MinerWallet is EIP712 {
     /// @notice How long a factory the owner proposes waits before its
     /// campaigns are trusted (time to notice and cancel a wrong one).
     uint256 public constant FACTORY_DELAY = 48 hours;
+    /// @notice Most priority fee per gas the refund pays above the block's
+    /// base fee (10× the relay's tip). A sender that bids more pays the
+    /// difference itself, so a stolen key cannot burn the wallet's ETH on
+    /// tips (internal audit v17, M-1).
+    uint256 public constant MAX_REFUND_TIP = 0.01 gwei;
+    /// @notice Longest owner signature accepted (room for ERC-1271 smart
+    /// account signatures).
+    uint256 public constant MAX_OWNER_SIG = 1024;
+    /// @dev Exact ABI size of `relayProof` / `relayShares` before the
+    /// `ownerSig` data: selector, the 7-word `Order`, the work (one word or
+    /// 16), two offsets, and a 65-byte `keySig` (length word + 3 words).
+    uint256 internal constant PROOF_CALL_HEAD = 4 + 7 * 32 + 32 + 2 * 32 + 4 * 32;
+    uint256 internal constant SHARES_CALL_HEAD = 4 + 7 * 32 + 16 * 32 + 2 * 32 + 4 * 32;
     address internal constant GAS_PRICE_ORACLE = 0x420000000000000000000000000000000000000F;
 
     bytes32 public constant KEY_AUTH_TYPEHASH = keccak256("KeyAuth(address key,uint64 epoch)");
@@ -125,6 +138,10 @@ contract MinerWallet is EIP712 {
     mapping(address factory => uint256) public factoryTrustedFrom;
 
     bool private _busy;
+    /// @dev Transient slot: calldata bytes of the current relayed call that
+    /// are not paid back (an `ownerSig` the key no longer needed); set by
+    /// `_checkOrder`, read and cleared by `_finish`.
+    bytes32 private constant UNPAID_BYTES_SLOT = keccak256("B20 MinerWallet unpaid bytes");
 
     error NotFactory();
     error AlreadyInitialized();
@@ -142,6 +159,8 @@ contract MinerWallet is EIP712 {
     error TransferFailed();
     error FactoryAlreadyProposed(address factory);
     error UnknownFactory(address factory);
+    error NonCanonicalCalldata(uint256 length, uint256 expected);
+    error BadSignatureLength();
 
     event Initialized(address indexed owner);
     event Deposited(address indexed from, uint256 amount);
@@ -285,6 +304,7 @@ contract MinerWallet is EIP712 {
         guarded
     {
         uint256 startGas = gasleft();
+        _checkCalldata(PROOF_CALL_HEAD, keySig, ownerSig);
         address key = _checkOrder(o, _orderHash(MINE_PROOF_TYPEHASH, o, bytes32(nonce)), keySig, ownerSig);
         if (o.target != B20_MINING && !isTrustedCampaign(o.target)) revert UntrustedTarget(o.target);
         uint256 fee = _orderFee(o);
@@ -299,6 +319,7 @@ contract MinerWallet is EIP712 {
         guarded
     {
         uint256 startGas = gasleft();
+        _checkCalldata(SHARES_CALL_HEAD, keySig, ownerSig);
         bytes32 work = keccak256(abi.encodePacked(nonces));
         address key = _checkOrder(o, _orderHash(MINE_SHARES_TYPEHASH, o, work), keySig, ownerSig);
         if (!isTrustedCampaign(o.target)) revert UntrustedTarget(o.target);
@@ -379,6 +400,14 @@ contract MinerWallet is EIP712 {
                     || !SignatureChecker.isValidSignatureNow(owner, keyAuthDigest(key), ownerSig)
             ) revert KeyNotAllowed(key);
             _allow(key);
+        } else {
+            // Already recorded: an `ownerSig` sent again is not paid back
+            // (the sender should leave it out).
+            uint256 unpaid = _words(ownerSig.length);
+            bytes32 slot = UNPAID_BYTES_SLOT;
+            assembly {
+                tstore(slot, unpaid)
+            }
         }
         uint256 last = lastOpNonce[key];
         if (o.opNonce <= last) revert UsedOrder(o.opNonce, last);
@@ -445,9 +474,13 @@ contract MinerWallet is EIP712 {
     /// L1 data fee. Paid whether or not the target accepted the order (the
     /// order is used either way), never more than the balance; a sender
     /// that refuses the refund just goes without it.
+    /// The calldata counted is the exact ABI encoding (`_checkCalldata`), less
+    /// an `ownerSig` the key no longer needed, and the gas price is capped at
+    /// the base fee plus `MAX_REFUND_TIP` (internal audit v17, M-1: padded
+    /// calldata or a huge tip must not turn the refund into a profit or a
+    /// drain).
     function _finish(address key, address target, bool ok, uint256 fee, bytes4 reason, uint256 startGas) internal {
-        uint256 cost = (startGas - gasleft() + RELAY_OVERHEAD + 16 * msg.data.length) * tx.gasprice
-            + _l1Fee(msg.data.length + L1_ENVELOPE);
+        uint256 cost = _refundCost(startGas);
         uint256 refund = cost < address(this).balance ? cost : address(this).balance;
         if (refund > 0) {
             // solhint-disable-next-line avoid-tx-origin
@@ -455,6 +488,32 @@ contract MinerWallet is EIP712 {
             if (!sent) refund = 0;
         }
         emit Relayed(key, target, ok, fee, refund, reason);
+    }
+
+    function _refundCost(uint256 startGas) internal returns (uint256) {
+        uint256 maxPrice = block.basefee + MAX_REFUND_TIP;
+        uint256 price = tx.gasprice < maxPrice ? tx.gasprice : maxPrice;
+        bytes32 slot = UNPAID_BYTES_SLOT;
+        uint256 unpaid;
+        assembly {
+            unpaid := tload(slot)
+            tstore(slot, 0)
+        }
+        uint256 size = msg.data.length - unpaid;
+        return (startGas - gasleft() + RELAY_OVERHEAD + 16 * size) * price + _l1Fee(size + L1_ENVELOPE);
+    }
+
+    /// @dev Trailing bytes are ignored by the ABI decoder but would be
+    /// refunded, so only the exact encoding is accepted: a 65-byte `keySig`
+    /// and an `ownerSig` of at most `MAX_OWNER_SIG` bytes, nothing after.
+    function _checkCalldata(uint256 head, bytes calldata keySig, bytes calldata ownerSig) internal pure {
+        if (keySig.length != 65 || ownerSig.length > MAX_OWNER_SIG) revert BadSignatureLength();
+        uint256 expected = head + 32 + _words(ownerSig.length);
+        if (msg.data.length != expected) revert NonCanonicalCalldata(msg.data.length, expected);
+    }
+
+    function _words(uint256 length) internal pure returns (uint256) {
+        return (length + 31) / 32 * 32;
     }
 
     function _selector(bytes memory err) internal pure returns (bytes4 s) {

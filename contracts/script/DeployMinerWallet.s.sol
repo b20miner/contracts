@@ -13,7 +13,9 @@ import {MinerRelay} from "../src/wallet/MinerRelay.sol";
 /// contracts it trusts come from this network's records: B20MINER's
 /// `B20Mining` from the genesis record (`launch-flow-deployment.json`) and
 /// the Launchpad factory from `launchpad-deployment.json`. v11 (30 Oct 2026)
-/// trusts the new testnet genesis and Launchpad v16. Before: the MinerWalletFactory on Base Sepolia
+/// trusts the new testnet genesis and Launchpad v16; v12 (31 Oct 2026) the
+/// H-1 genesis and Launchpad v17; v13 (2 Nov 2026) the same, with the
+/// internal audit v17 M-1 refund fix. Before: the MinerWalletFactory on Base Sepolia
 /// (`docs/B20_MINER_LAUNCHPAD_CONTRACTS_V1.md` §26–§29; K62: keys hold no
 /// ETH, they sign orders that anyone relays and the wallet pays the
 /// relayer's gas back). Two transactions: the factory, which deploys its
@@ -119,6 +121,10 @@ contract DeployMinerWallet is Script {
         _check(impl.RELAY_OVERHEAD() == 12_000 && impl.L1_ENVELOPE() == 120, "relay overhead 12,000 gas, L1 envelope 120 bytes");
         _check(impl.FINISH_GAS() == 60_000, "60,000 gas kept for the refund after the target call");
         _check(impl.FACTORY_DELAY() == 48 hours, "a proposed factory waits 48 hours (K62)");
+        _check(
+            impl.MAX_REFUND_TIP() == 0.01 gwei && impl.MAX_OWNER_SIG() == 1024,
+            "refund price capped at base fee + 0.01 gwei, owner signature at most 1,024 bytes (audit v17 M-1)"
+        );
         (, string memory name, string memory version,,,,) = impl.eip712Domain();
         _check(
             keccak256(bytes(name)) == keccak256("B20 MinerWallet") && keccak256(bytes(version)) == keccak256("5"),
@@ -142,7 +148,7 @@ contract DeployMinerWallet is Script {
             '","minerWalletImplementation":"', vm.toString(address(factory.IMPLEMENTATION())),
             '","minerRelay":"', vm.toString(address(relay)), '"},',
             '"dependencies":{"b20Mining":"', vm.toString(mining), '","launchpadFactory":"', vm.toString(launchpad), '"},',
-            '"parameters":{"model":"relayed-orders","relayOverheadGas":12000,"l1EnvelopeBytes":120,"finishGas":60000,"factoryDelaySeconds":172800,',
+            '"parameters":{"model":"relayed-orders","relayOverheadGas":12000,"l1EnvelopeBytes":120,"finishGas":60000,"factoryDelaySeconds":172800,"maxRefundTipWei":"10000000","maxOwnerSigBytes":1024,"canonicalCalldata":true,',
             '"eip712":{"name":"B20 MinerWallet","version":"5"},"keyFloatWei":"0","admin":false,"upgradeable":false,"walletsPerOwner":1}}'
         );
     }

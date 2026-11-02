@@ -62,12 +62,18 @@ claim windows are 1 day each; on Base they are 15 days.
 | PositionLocker | `0xd579964df76f722dB7c480aE13D87180DCFA06ff` |
 | LaunchpadHook | `0x372557A2E0da7cc11FB6d4788720540ee19420cC` |
 | LaunchpadSwapRouter | `0xb817581D358D6F12a5A789b25CE263694C04eaC3` |
-| MinerWalletFactory | `0xe9A014A76c3A44c3bcda1954521E81648aF00608` |
-| MinerWallet (implementation) | `0x4e5bC558a9897C95346D219dB9F845e11aA92e93` |
+| MinerWalletFactory (v13, 2 Nov 2026) | `0xfbFF0386BbC2E1099c691BeBd8Fb56b1Df0d66D5` |
+| MinerWallet (implementation, v13) | `0x6C1225717F2470B551A1e79560a2D65FB545fd45` |
 | MinerRelay | `0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165` |
 
 The source of these contracts is verified on [Sourcify](https://sourcify.dev).
-The tag `sepolia-v17` marks the commit they were deployed from.
+The tag `sepolia-v17` marks the commit they were deployed from. The mining
+wallet factory was replaced on 2 November 2026 (v13) after our internal
+audit (finding M-1: the relay gas refund now counts only the exact call
+data and caps the gas price at the base fee plus 0.01 gwei). The v12 factory
+`0xe9A014A76c3A44c3bcda1954521E81648aF00608` (implementation
+`0x4e5bC558a9897C95346D219dB9F845e11aA92e93`) stays on chain; the apps let
+its wallets withdraw only.
 
 To rebuild the deployed bytecode (metadata hash included), compile the
 contracts alone with solc 0.8.35. A full `base-forge build` also compiles the

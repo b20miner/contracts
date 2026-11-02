@@ -5,10 +5,10 @@
   "product": "b20-miner-wallet",
   "design": "docs/B20_MINER_LAUNCHPAD_CONTRACTS_V1.md 1.34 §29 (K59-K62), §31 (K64)",
   "deployer": "0xF9495886D18dE9bc9c54Be8770872fDd900B74cf",
-  "checksPassed": 12,
+  "checksPassed": 13,
   "contracts": {
-    "minerWalletFactory": "0xe9A014A76c3A44c3bcda1954521E81648aF00608",
-    "minerWalletImplementation": "0x4e5bC558a9897C95346D219dB9F845e11aA92e93",
+    "minerWalletFactory": "0xfbFF0386BbC2E1099c691BeBd8Fb56b1Df0d66D5",
+    "minerWalletImplementation": "0x6C1225717F2470B551A1e79560a2D65FB545fd45",
     "minerRelay": "0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165"
   },
   "dependencies": {
@@ -21,6 +21,9 @@
     "l1EnvelopeBytes": 120,
     "finishGas": 60000,
     "factoryDelaySeconds": 172800,
+    "maxRefundTipWei": "10000000",
+    "maxOwnerSigBytes": 1024,
+    "canonicalCalldata": true,
     "eip712": {
       "name": "B20 MinerWallet",
       "version": "5"

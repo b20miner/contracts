@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
-  "purpose": "B20 Miner mining wallet contract on Base Sepolia, relayed-orders version, factory v12 (31 Oct 2026): wallets trust the genesis with the audit H-1-fixed MinerPool (its B20Mining) and Launchpad v17 from creation.",
+  "purpose": "B20 Miner mining wallet contract on Base Sepolia, relayed-orders version, factory v13 (2 Nov 2026): same trust as v12 (the H-1 genesis's B20Mining and Launchpad v17) plus the internal audit v17 M-1 refund fix (canonical calldata only, a resent ownerSig not refunded, refund price capped at base fee + 0.01 gwei).",
   "network": "base-sepolia",
   "chainId": 84532,
-  "broadcastCompletedAt": "2026-10-31T17:11:57Z",
+  "broadcastCompletedAt": "2026-11-02T14:09:47Z",
   "deployer": "0xF9495886D18dE9bc9c54Be8770872fDd900B74cf",
   "deployerKeystore": "b20-sepolia-deployer-v14",
-  "firstNonce": 18,
+  "firstNonce": 20,
   "blockRange": {
-    "first": 52724244,
-    "last": 52724244
+    "first": 53533592,
+    "last": 53533592
   },
   "actualDeploymentCostWei": {
-    "l2Execution": "26455170000000",
-    "l1Data": "8270",
-    "total": "26455170008270"
+    "l2Execution": "27189792000000",
+    "l1Data": "8855",
+    "total": "27189792008855"
   },
   "contracts": {
-    "minerWalletFactory": "0xe9A014A76c3A44c3bcda1954521E81648aF00608",
-    "minerWalletImplementation": "0x4e5bC558a9897C95346D219dB9F845e11aA92e93",
+    "minerWalletFactory": "0xfbFF0386BbC2E1099c691BeBd8Fb56b1Df0d66D5",
+    "minerWalletImplementation": "0x6C1225717F2470B551A1e79560a2D65FB545fd45",
     "minerRelay": "0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165"
   },
   "dependencies": {
@@ -31,6 +31,9 @@
     "l1EnvelopeBytes": 120,
     "finishGas": 60000,
     "factoryDelaySeconds": 172800,
+    "maxRefundTipWei": "10000000",
+    "maxOwnerSigBytes": 1024,
+    "canonicalCalldata": true,
     "eip712": {
       "name": "B20 MinerWallet",
       "version": "5"
@@ -43,22 +46,22 @@
   "transactions": [
     {
       "contract": "MinerWalletFactory",
-      "address": "0xe9a014a76c3a44c3bcda1954521e81648af00608",
-      "transactionHash": "0xac3327b7c6e7aafe992e110aae962092a9a6b65d0602a22f557af544a27000e6",
-      "block": 52724244,
-      "nonce": 18,
+      "address": "0xfbff0386bbc2e1099c691bebd8fb56b1df0d66d5",
+      "transactionHash": "0xee3432e3529326bafdd410a881fcf272343681702e2efe4224962ef43491bc47",
+      "block": 53533592,
+      "nonce": 20,
       "status": "success",
       "alsoCreated": {
-        "MinerWallet": "0x4e5bC558a9897C95346D219dB9F845e11aA92e93"
+        "MinerWallet": "0x6C1225717F2470B551A1e79560a2D65FB545fd45"
       }
     }
   ],
   "verification": {
-    "checksDuringRun": 12,
-    "checksFromLiveChain": 12,
-    "checksNote": "verifyRecorded() on 2026-10-31 from https://sepolia.base.org: 12/12; dry run before the broadcast 12/12."
+    "checksDuringRun": 13,
+    "checksFromLiveChain": 13,
+    "checksNote": "verifyRecorded() on 2026-11-02 from https://sepolia.base.org: 13/13; dry run before the broadcast 13/13; runtime metadata hash of factory and implementation equals the local build."
   },
-  "notes": "New genesis (audit H-1-fixed MinerPool) + Launchpad v17 (31 Oct 2026), so a new wallet factory. v11 and earlier wallets belong to retired genesis / Launchpad versions; the apps keep earlier factories withdraw-only.",
+  "notes": "Internal audit v17 M-1 (docs/CONTRACT_SECURITY_AUDIT_V17.md): a stolen permission key could pad relayed calldata and profit from the gas refund. Clones cannot be upgraded, so v13 is a new factory; v12 wallets stay withdraw-only in the apps (the relay still carries their orders while users move).",
   "supersedes": [
     {
       "record": "miner-wallet-deployment-record-v1.json",
@@ -114,6 +117,11 @@
       "record": "miner-wallet-deployment-record-v11.json",
       "minerWalletFactory": "0xf4a2F99b482b23b37355fcAcA2398BE2eC97297e",
       "reason": "v16 genesis retired (MinerPool without the H-1 fix)"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v12.json",
+      "minerWalletFactory": "0xe9A014A76c3A44c3bcda1954521E81648aF00608",
+      "reason": "internal audit v17 M-1: padded calldata turned the relay refund into a profit for a stolen key"
     }
   ],
   "reused": {

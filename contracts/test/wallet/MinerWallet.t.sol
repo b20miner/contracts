@@ -760,4 +760,93 @@ contract MinerWalletTest is Test {
         emit log_named_uint("relayed relayShares gas", gWallet);
         assertLt(gWallet - gDirect, 70_000);
     }
+
+    // ------------------------------------------------------------- internal audit (2 Nov 2026)
+
+    /// M-1 (was the PoC: 120 KB of zero padding at 100 gwei refunded 0.2093
+    /// ETH for a 0.1232 ETH transaction). Bytes after the ABI encoding are
+    /// now refused, for proofs and for shares, directly and through the batch.
+    function test_audit_paddedCalldataIsRefused() public {
+        MiningCampaign c = _campaign(launchpad, true);
+        MinerWallet w = _funded(5 ether);
+        MinerWallet.Order memory o = _order(address(b20), bytes32(0), PROOF_GAS);
+        bytes memory data = abi.encodeCall(MinerWallet.relayProof, (o, 1, _proofSig(w, KEY_PK, o, 1), _auth(w, KEY)));
+        bytes memory padded = bytes.concat(data, new bytes(32));
+        vm.prank(RELAYER, RELAYER);
+        (bool ok, bytes memory err) = address(w).call(padded);
+        assertFalse(ok);
+        assertEq(err, abi.encodeWithSelector(MinerWallet.NonCanonicalCalldata.selector, data.length + 32, data.length));
+        // Even one byte.
+        vm.prank(RELAYER, RELAYER);
+        (ok,) = address(w).call(bytes.concat(data, hex"00"));
+        assertFalse(ok);
+        // The exact encoding still works.
+        vm.prank(RELAYER, RELAYER);
+        (ok,) = address(w).call(data);
+        assertTrue(ok);
+
+        uint256[16] memory nonces = _shares(c, OWNER, address(w));
+        MinerWallet.Order memory s = _order(address(c), c.challengeOf(OWNER), SHARES_GAS);
+        bytes memory sdata = abi.encodeCall(MinerWallet.relayShares, (s, nonces, _sharesSig(w, KEY_PK, s, nonces), ""));
+        vm.prank(RELAYER, RELAYER);
+        (ok,) = address(w).call(bytes.concat(sdata, new bytes(64)));
+        assertFalse(ok, "padded shares");
+        vm.prank(RELAYER, RELAYER);
+        (ok,) = address(w).call(sdata);
+        assertTrue(ok, "exact shares");
+        assertGt(c.minedOf(OWNER), 0);
+    }
+
+    /// Signatures have fixed sizes: a 65-byte key signature, an owner
+    /// signature of at most 1,024 bytes.
+    function test_audit_signatureLengthsAreBounded() public {
+        MinerWallet w = _funded(1 ether);
+        MinerWallet.Order memory o = _order(address(b20), bytes32(0), PROOF_GAS);
+        bytes memory sig = _proofSig(w, KEY_PK, o, 1);
+        bytes memory auth = _auth(w, KEY);
+        vm.prank(RELAYER, RELAYER);
+        vm.expectRevert(MinerWallet.BadSignatureLength.selector);
+        w.relayProof(o, 1, bytes.concat(sig, hex"00"), auth);
+        vm.prank(RELAYER, RELAYER);
+        vm.expectRevert(MinerWallet.BadSignatureLength.selector);
+        w.relayProof(o, 1, sig, new bytes(1025));
+    }
+
+    /// A sender's tip above `MAX_REFUND_TIP` is its own cost: a stolen key
+    /// signing a huge `maxGasPrice` cannot burn the wallet's ETH on tips.
+    function test_audit_refundPriceIsCappedAtBaseFeePlusTip() public {
+        MinerWallet w = _funded(5 ether);
+        vm.fee(0.005 gwei);
+        vm.txGasPrice(100 gwei);
+        MinerWallet.Order memory o = _order(address(b20), bytes32(0), PROOF_GAS);
+        o.maxGasPrice = 100 gwei;
+        bytes memory sig = _proofSig(w, KEY_PK, o, 1);
+        bytes memory auth = _auth(w, KEY);
+        vm.prank(RELAYER, RELAYER);
+        w.relayProof(o, 1, sig, auth);
+        uint256 refund = RELAYER.balance;
+        uint256 capped = 0.005 gwei + w.MAX_REFUND_TIP();
+        assertGt(refund, 0);
+        assertLt(refund, 200_000 * capped, "paid at the capped price");
+        assertLt(refund * 1_000, 200_000 * 100 gwei, "nowhere near the sender's price");
+    }
+
+    /// An owner signature sent again after the key's first use is not paid
+    /// back: the refund is the same as without it.
+    function test_audit_resentOwnerSigIsNotRefunded() public {
+        MinerWallet w = _funded(1 ether);
+        bytes memory auth = _auth(w, KEY);
+        _relayProof(w, KEY_PK, 0, auth); // first use: recorded and paid
+        uint256 snap = vm.snapshotState();
+        uint256 before = RELAYER.balance;
+        _relayProof(w, KEY_PK, 1, "");
+        uint256 without = RELAYER.balance - before;
+        vm.revertToState(snap);
+        before = RELAYER.balance;
+        _relayProof(w, KEY_PK, 1, auth);
+        uint256 withSig = RELAYER.balance - before;
+        // Only the execution of copying 65 bytes differs (a few hundred gas).
+        assertApproxEqAbs(withSig, without, 500 * GAS_PRICE);
+        assertLt(withSig, without + 16 * 96 * GAS_PRICE / 2);
+    }
 }
