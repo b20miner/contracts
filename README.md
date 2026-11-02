@@ -17,6 +17,7 @@ wallet.
 | `contracts/test` | Unit, integration, invariant and fork tests |
 | `contracts/script` | The deploy scripts used on Base Sepolia |
 | `deployments/base-sepolia` | Deployed addresses and deploy records |
+| `audits` | Security audit reports |
 | `scripts/deploy-v16.sh` | Runs the deploy scripts step by step |
 
 MINER is a Base-native B20 asset created through Base's B20 factory, so the
@@ -86,7 +87,9 @@ base-forge build --use 0.8.35 --skip test --skip script
 
 ## Security
 
-See [SECURITY.md](SECURITY.md). The contracts have not been audited yet.
+Internal audit — passed (2 Nov 2026): [report](audits/2026-11-02-internal-audit.md).
+The audit was done by the B20MINER team, not by an independent firm. To
+report a security problem, see [SECURITY.md](SECURITY.md).
 
 ## License
 
