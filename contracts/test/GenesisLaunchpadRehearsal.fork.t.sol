@@ -77,7 +77,9 @@ abstract contract GenesisLaunchpadRehearsal is Test {
 
     function setUp() public {
         vm.createSelectFork(_rpc());
-        _etchReferenceB20();
+        // A fork where the B20 precompiles run natively (Base Sepolia, seen 3 Nov 2026)
+        // refuses vm.etch on them and uses them as they are; otherwise the reference mocks.
+        try this.etchReferenceB20() {} catch {}
 
         genesis = new RehearsalGenesisHarness();
         g = genesis.deployForTest(
@@ -125,18 +127,25 @@ abstract contract GenesisLaunchpadRehearsal is Test {
         assertEq(wallets.IMPLEMENTATION().B20_MINING(), address(g.mining));
         assertEq(wallets.IMPLEMENTATION().LAUNCHPAD_FACTORY(), address(l.factory));
 
-        // before mining: Public NFTs, half of whose price is the pool's ETH
+        // nothing is open before the opener's call (2 Nov 2026)
         uint256 nftPrice = g.publicNFT.MINT_PRICE(); // before the prank, which the next call uses up
+        vm.deal(address(0xB0001), 1 ether);
+        vm.prank(address(0xB0001));
+        vm.expectRevert();
+        g.publicNFT.mint{value: 5 * nftPrice}(5);
+
+        vm.prank(OPENER);
+        g.mining.openMining();
+        uint256 end = g.mining.MINING_END();
+        assertEq(end, block.timestamp + _window());
+
+        // then Public NFTs, half of whose price is the pool's ETH
         for (uint160 i = 1; i <= 3; i++) {
             address buyer = address(0xB0000 + i);
             vm.deal(buyer, 1 ether);
             vm.prank(buyer);
             g.publicNFT.mint{value: 5 * nftPrice}(5);
         }
-        vm.prank(OPENER);
-        g.mining.openMining();
-        uint256 end = g.mining.MINING_END();
-        assertEq(end, block.timestamp + _window());
 
         // a Launchpad token while MINER's pool is still closed: its share waits there
         uint256 fee = l.factory.creationFeeWei();
@@ -193,7 +202,7 @@ abstract contract GenesisLaunchpadRehearsal is Test {
 
     /// @dev base-std's reference B20 precompiles (as `BaseTest` does). On a
     /// fork, a feature that is already on is skipped instead of re-activated.
-    function _etchReferenceB20() internal {
+    function etchReferenceB20() external {
         vm.etch(StdPrecompiles.B20_FACTORY_ADDRESS, type(MockB20Factory).runtimeCode);
         vm.etch(StdPrecompiles.POLICY_REGISTRY_ADDRESS, type(MockPolicyRegistry).runtimeCode);
         vm.etch(StdPrecompiles.ACTIVATION_REGISTRY_ADDRESS, type(MockActivationRegistry).runtimeCode);

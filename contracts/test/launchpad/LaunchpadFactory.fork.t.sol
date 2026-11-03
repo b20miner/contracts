@@ -87,7 +87,9 @@ contract LaunchpadFactoryForkTest is Test {
 
     function setUp() public {
         vm.createSelectFork("https://sepolia.base.org");
-        _etchReferenceB20();
+        // A fork where the B20 precompiles run natively (Base Sepolia, seen 3 Nov 2026)
+        // refuses vm.etch on them and uses them as they are; otherwise the reference mocks.
+        try this.etchReferenceB20() {} catch {}
 
         miner = new MockCampaignToken();
         vm.deal(address(this), 1_000 ether);
@@ -130,7 +132,7 @@ contract LaunchpadFactoryForkTest is Test {
     /// @dev base-std's reference B20 precompiles (as `BaseTest` does). On the
     /// fork the activation registry's storage already reads as active, so a
     /// feature that is already on is skipped instead of re-activated.
-    function _etchReferenceB20() internal {
+    function etchReferenceB20() external {
         vm.etch(StdPrecompiles.B20_FACTORY_ADDRESS, type(MockB20Factory).runtimeCode);
         vm.etch(StdPrecompiles.POLICY_REGISTRY_ADDRESS, type(MockPolicyRegistry).runtimeCode);
         vm.etch(StdPrecompiles.ACTIVATION_REGISTRY_ADDRESS, type(MockActivationRegistry).runtimeCode);

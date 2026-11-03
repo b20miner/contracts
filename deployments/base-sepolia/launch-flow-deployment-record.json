@@ -1,29 +1,149 @@
 {
   "schemaVersion": 1,
-  "purpose": "Base Sepolia B20MINER genesis with the audit H-1-fixed MinerPool (owner, 31 Oct 2026; docs/CONTRACT_SECURITY_AUDIT_V16.md): buy support anchored to the highest flush-sampled tick of the last two 10-minute windows, MAX_DRIFT 600 ticks, bidCap 0.25% of the opening ETH, one addition per block. Otherwise the v16 testnet genesis unchanged (V4 MinerPool ETH/MINER 0.30%, spacing 60, no hook, opened by finalize at 1 ETH = 6M MINER, sale-fee MINER burned; 1-day windows on Base Sepolia). Contracts doc \u00a740\u2013\u00a742, runbook docs/B20_V16_GENESIS_DEPLOY_RUNBOOK.md.",
+  "purpose": "Base Sepolia B20MINER genesis for the final rehearsal of the mainnet deploy (3 Nov 2026, docs/FINAL_DEPLOY_MAINNET_PLAN_V1.md): the mainnet code (H-1-fixed MinerPool, openMining() also opens NFT mint and confirm, genesis keeper on the relay) with 1-day windows on this chain.",
   "network": "base-sepolia",
   "chainId": 84532,
-  "broadcastCompletedAt": "2026-10-31T17:02:48Z",
-  "deployer": "0xF9495886D18dE9bc9c54Be8770872fDd900B74cf",
-  "deployerKeystore": "b20-sepolia-deployer-v14",
+  "broadcastCompletedAt": "2026-11-02T23:54:21Z",
+  "deployer": "0x63f0632a616eb7cc89C95C1b9c044C6C6c6Cc46e",
+  "deployerKeystore": "b20-sepolia-deployer-v15",
   "firstNonce": 0,
   "blockRange": {
-    "first": 52721442,
-    "last": 52721499
+    "first": 53708906,
+    "last": 53708965
   },
   "actualDeploymentCostWei": {
-    "l2Execution": "134953194000000",
-    "l1Data": "44781",
-    "total": "134953194044781"
+    "l2Execution": "123812771500000",
+    "l1Data": "806731310",
+    "total": "123813578231310"
   },
+  "gasUsed": 22511413,
+  "transactions": [
+    {
+      "contract": null,
+      "address": "0xb20f000000000000000000000000000000000000",
+      "transactionHash": "0xfb5bb5977e7aad2353be86c2502e7080d94590f9d9c2046b2e97733fd9bcd70a",
+      "block": 53708906,
+      "nonce": 0,
+      "status": "success",
+      "gasUsed": 385922
+    },
+    {
+      "contract": "B20WalletBinding",
+      "address": "0x90c4696a23fc4f01af54ff373f4e62c28270f44b",
+      "transactionHash": "0xadbc286b336d8a1353f1dada0894d126f0c75107ff700a8ef10279058a4c2758",
+      "block": 53708909,
+      "nonce": 1,
+      "status": "success",
+      "gasUsed": 504297
+    },
+    {
+      "contract": "MinerPool",
+      "address": "0xf07aebdda0088dba21fb7d162835d306d60cad3f",
+      "transactionHash": "0x822ff3702f3bef5cb65ef847a5d46d138872ea270447a751ae9d8d0915e16032",
+      "block": 53708913,
+      "nonce": 2,
+      "status": "success",
+      "gasUsed": 4381470
+    },
+    {
+      "contract": "B20EcosystemVault",
+      "address": "0x7d7d55073a6608031751e77713f137b984154fcb",
+      "transactionHash": "0xea578a913a76e2149fa90f0f11f1a84d44f6507744eae7b1c4f2728f6fe5f14d",
+      "block": 53708916,
+      "nonce": 3,
+      "status": "success",
+      "gasUsed": 879412
+    },
+    {
+      "contract": "B20TeamVesting",
+      "address": "0xb02abaf1e6eb55dd8d018a41938258a982d354b2",
+      "transactionHash": "0xaa06c087e7eb2604807186f66e6f9ac3c46c41375c7a28e04c07bb1f0b2219b1",
+      "block": 53708920,
+      "nonce": 4,
+      "status": "success",
+      "gasUsed": 609829
+    },
+    {
+      "contract": "B20NFTRevenueVault",
+      "address": "0xfb1d72976923ddf41dd4a47e2b94b6a58105460c",
+      "transactionHash": "0xf38bcba3171e42d4a711065c8a1fb0de5d7384e9b5552d9c701048fbfa2a8c6f",
+      "block": 53708923,
+      "nonce": 5,
+      "status": "success",
+      "gasUsed": 440398
+    },
+    {
+      "contract": "B20EligibleNFT",
+      "address": "0xe2fd2054df2e1a85a76f6e15f6d74520ec143211",
+      "transactionHash": "0x2c6cb5ce530b05dcf5c47babcca0314b5e8a7202f7ecac2b7edd15ea466136fa",
+      "block": 53708927,
+      "nonce": 6,
+      "status": "success",
+      "gasUsed": 3193432
+    },
+    {
+      "contract": "B20PublicNFT",
+      "address": "0x667107bb2b053a58156ac54297ed6403b9dc81b0",
+      "transactionHash": "0xb7c93748d8e506c10e782b2c47673f2d0b26e25345d42fe2053637c3c176d2c4",
+      "block": 53708939,
+      "nonce": 7,
+      "status": "success",
+      "gasUsed": 2976948
+    },
+    {
+      "contract": "B20LiquidityFinalizer",
+      "address": "0x4fecc1e4d020dda069662161e369cb2cb47f9ca8",
+      "transactionHash": "0xded8fefd0b813e2883b158919e7ebe38917aa6de1fb568b3ae9c31219d55bca5",
+      "block": 53708943,
+      "nonce": 8,
+      "status": "success",
+      "gasUsed": 1521178
+    },
+    {
+      "contract": "B20Mining",
+      "address": "0x1d94ee4cfda776ceed4625583e17104592d5e2b0",
+      "transactionHash": "0xebe823eaf94927874f65dd9213fa745f7968bc9505bde3c67d4a6d92635127e4",
+      "block": 53708955,
+      "nonce": 9,
+      "status": "success",
+      "gasUsed": 2831682
+    },
+    {
+      "contract": "B20ClaimVault",
+      "address": "0x34018c4b59903946746d5fdda4443826957d5bc9",
+      "transactionHash": "0x4e9a124a00686ff5ee9d4b3504d292b598f7310af02e647b32e417aae72d58a4",
+      "block": 53708958,
+      "nonce": 10,
+      "status": "success",
+      "gasUsed": 1632313
+    },
+    {
+      "contract": "MinerBurner",
+      "address": "0xd946b2867a9615766f76a921309254613209df2f",
+      "transactionHash": "0x43caca33044d0b2167be8822c080c4acfd573baa9b28e55d902d5c98e5777991",
+      "block": 53708962,
+      "nonce": 11,
+      "status": "success",
+      "gasUsed": 298152
+    },
+    {
+      "contract": "B20CommunityVault",
+      "address": "0xb1fc9d3df02aaf8f10d5ec9ac9c7ad687283d7a9",
+      "transactionHash": "0x5b9c030d855b1b6d8647c5fbfd3eeeef2637032c1b0836b95ebdc2d763e3b883",
+      "block": 53708965,
+      "nonce": 12,
+      "status": "success",
+      "gasUsed": 2856380
+    }
+  ],
   "parameters": {
-    "tgeTimestamp": 1793552538,
-    "miningOpener": "0xF9495886D18dE9bc9c54Be8770872fDd900B74cf",
-    "miningOpenDeadline": 1794070938,
+    "tgeTimestamp": 1793750030,
+    "miningOpener": "0x63f0632a616eb7cc89C95C1b9c044C6C6c6Cc46e",
+    "miningOpenDeadline": 1794268430,
     "miningDurationSeconds": 86400,
     "claimPeriodSeconds": 86400,
-    "ethUsdPriceCentsAtDeploy": 224971,
-    "activationFeeWei": "444501735779279",
+    "ethUsdPriceCentsAtDeploy": 224961,
+    "activationFeeWei": "444521494836883",
     "powTarget": "0x000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
     "powLeadingZeroBits": 24,
     "rewardPerProofWei": "312500000000000000000",
@@ -35,131 +155,29 @@
     "nftQuotaCapWei": "1000000000000000000000000000",
     "communityReserveWei": "8000000000000000000000000000"
   },
-  "ethUsdPriceSource": "Chainlink ETH/USD on Base Sepolia (0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1) latestAnswer read by scripts/deploy-v16.sh right before the broadcast: 2,249.71 USD (224971 cents)",
+  "ethUsdPriceSource": "Chainlink ETH/USD on Base Sepolia (0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1) latestAnswer read by scripts/deploy-v16.sh right before the broadcast",
   "contracts": {
-    "b20Token": "0xb200000000000000000000c9FEC3181Ce714dEa9",
-    "b20WalletBinding": "0x9Ab79D1B5c0eC5Ba9f4C9B9C5e29F9F9dB6e8666",
-    "b20Mining": "0x95442C94D2Ff303B115Ee029Ccd94D9B8C7Ca6A2",
-    "b20EligibleNFT": "0x602EB357c534bFE4b0Fb345e00DC7dDD7f7249cE",
-    "b20PublicNFT": "0x6262B87062D6A866a28DA1B8c94B0d39597Cb3a2",
-    "b20NFTRevenueVault": "0xf53B2668c6335441b951FF270F4528c3A09e8b64",
-    "b20ClaimVault": "0xeec4190f14F8F309d1E7FFC41080B72Bb6DEcb6e",
-    "b20LiquidityFinalizer": "0xEA4fd0079A5B5b0824bc5576B1Bc26E3Baa15E5a",
-    "minerPool": "0x6d119d233A438c8322b305a24B843186b5409798",
-    "b20TeamVesting": "0xD6A865D52Cb75c523E9F5521E4f22cE7343c252e",
-    "b20EcosystemVault": "0x34Ef0be6c90fde87c3B4695469D1Ab74ca75961C",
-    "minerBurner": "0xef5A4DEA639E2c3f77F4BA0e63A97Eb5cd9dEc33",
-    "b20CommunityVault": "0x4c16Df187437BcDa50a6a75Acb5ac0890B708726"
+    "b20Token": "0xb200000000000000000000f05e939E87Fc68e8e5",
+    "b20WalletBinding": "0x90c4696A23fc4F01af54ff373F4E62c28270F44b",
+    "b20Mining": "0x1d94eE4CfdA776CeeD4625583E17104592D5e2B0",
+    "b20EligibleNFT": "0xE2fD2054df2e1A85A76F6E15F6d74520eC143211",
+    "b20PublicNFT": "0x667107bB2B053a58156Ac54297ED6403B9dC81B0",
+    "b20NFTRevenueVault": "0xfB1d72976923ddF41dD4A47E2b94b6a58105460c",
+    "b20ClaimVault": "0x34018C4b59903946746d5FdDA4443826957d5bC9",
+    "b20LiquidityFinalizer": "0x4feCC1E4d020dDa069662161E369cB2cb47f9CA8",
+    "minerPool": "0xF07aebdda0088DbA21Fb7d162835d306d60cad3f",
+    "b20TeamVesting": "0xb02aBaf1E6eb55DD8D018A41938258A982d354B2",
+    "b20EcosystemVault": "0x7d7D55073A6608031751e77713f137b984154fcb",
+    "minerBurner": "0xd946b2867A9615766F76A921309254613209dF2f",
+    "b20CommunityVault": "0xB1fC9d3Df02AAF8f10d5eC9aC9C7Ad687283d7A9"
   },
-  "transactions": [
-    {
-      "step": 0,
-      "what": "B20Factory.createB20 (native MINER: 61B claim vault, 25B finalizer, 5B ecosystem, 1B team, 8B community)",
-      "hash": "0xdb1a2df6becfa0039ab1baa125766481e4914a45438bf69d2c479e15897e43f2",
-      "block": 52721442,
-      "status": "success",
-      "address": "0xb20f000000000000000000000000000000000000"
-    },
-    {
-      "step": 1,
-      "what": "B20WalletBinding (CREATE)",
-      "hash": "0xd0b629c014b125b2a518cdee0a6fa82c61f53b7369893ffec8ff02f864e9c1f7",
-      "block": 52721446,
-      "status": "success",
-      "address": "0x9ab79d1b5c0ec5ba9f4c9b9c5e29f9f9db6e8666"
-    },
-    {
-      "step": 2,
-      "what": "MinerPool (CREATE)",
-      "hash": "0xbf40f78ed0000d00ea5b7c4124ff372e77888658e49f6a8047ce68c06401a73d",
-      "block": 52721458,
-      "status": "success",
-      "address": "0x6d119d233a438c8322b305a24b843186b5409798"
-    },
-    {
-      "step": 3,
-      "what": "B20EcosystemVault (CREATE)",
-      "hash": "0xc9c5b48f2684ada68e2087fea166423f302c760aab4e7ed3d3a5aaf0e102179a",
-      "block": 52721461,
-      "status": "success",
-      "address": "0x34ef0be6c90fde87c3b4695469d1ab74ca75961c"
-    },
-    {
-      "step": 4,
-      "what": "B20TeamVesting (CREATE)",
-      "hash": "0xfa8c79a1af8ddee755c6ebcfa9b0de2ea2ccf097338c0d3bcdcaab9360142b3e",
-      "block": 52721464,
-      "status": "success",
-      "address": "0xd6a865d52cb75c523e9f5521e4f22ce7343c252e"
-    },
-    {
-      "step": 5,
-      "what": "B20NFTRevenueVault (CREATE)",
-      "hash": "0x73a81b1369b91120a9730d771376876dbd8a41f8b4c9a273369842cba822ff7b",
-      "block": 52721467,
-      "status": "success",
-      "address": "0xf53b2668c6335441b951ff270f4528c3a09e8b64"
-    },
-    {
-      "step": 6,
-      "what": "B20EligibleNFT (CREATE)",
-      "hash": "0xf31875b52c3e30bf442f00a9afb81d6807f181014db2118a0c2bb3ec0fcc3cb3",
-      "block": 52721471,
-      "status": "success",
-      "address": "0x602eb357c534bfe4b0fb345e00dc7ddd7f7249ce"
-    },
-    {
-      "step": 7,
-      "what": "B20PublicNFT (CREATE)",
-      "hash": "0x154949dfda30818243c86acd6636a7807efb3ece23c7b824b7b56e974d5622f0",
-      "block": 52721474,
-      "status": "success",
-      "address": "0x6262b87062d6a866a28da1b8c94b0d39597cb3a2"
-    },
-    {
-      "step": 8,
-      "what": "B20LiquidityFinalizer (CREATE)",
-      "hash": "0x8f83674cb280f8c99dbd4b828f6ded5b68b9bedd5e03af316a5a439a3502754c",
-      "block": 52721477,
-      "status": "success",
-      "address": "0xea4fd0079a5b5b0824bc5576b1bc26e3baa15e5a"
-    },
-    {
-      "step": 9,
-      "what": "B20Mining (CREATE)",
-      "hash": "0x163fd83a697e63942b1e475e1c56cd9b54b530d9373171a2a59dabb4d432b556",
-      "block": 52721481,
-      "status": "success",
-      "address": "0x95442c94d2ff303b115ee029ccd94d9b8c7ca6a2"
-    },
-    {
-      "step": 10,
-      "what": "B20ClaimVault (CREATE)",
-      "hash": "0x62508b3cc1e7511c9bc9d6620c8b40dd6fe1b3c8bef9683db82e719093f10fe1",
-      "block": 52721492,
-      "status": "success",
-      "address": "0xeec4190f14f8f309d1e7ffc41080b72bb6decb6e"
-    },
-    {
-      "step": 11,
-      "what": "MinerBurner (CREATE)",
-      "hash": "0x8b579fca38c2f01ca2bbcfc511ade52725348711af3b7fcfdd50b15db11ba62b",
-      "block": 52721495,
-      "status": "success",
-      "address": "0xef5a4dea639e2c3f77f4ba0e63a97eb5cd9dec33"
-    },
-    {
-      "step": 12,
-      "what": "B20CommunityVault (CREATE)",
-      "hash": "0xcc5e5ee3167ad8d830a65d4fb7059cf624fff94d266ef15b34c44adcd54fbe69",
-      "block": 52721499,
-      "status": "success",
-      "address": "0x4c16df187437bcda50a6a75acb5ac0890b708726"
-    }
-  ],
   "independentChecks": {
     "receipts": "13/13 success",
-    "reads": "cast reads against https://sepolia.base.org after the broadcast (31 Oct 2026): supply 100B, name B20MINER / MINER; balances claim vault 61B, finalizer 25B, ecosystem 5B, team 1B, community 8B, pool/deployer 0; MINING_DURATION 86400, miningOpened false; MinerPool opened false, MINER/BURNER/FINALIZER wired, WINDOW 600, MAX_DRIFT 600, MAX_BID_BPS 25 (the H-1 fix is live); finalizer minerPool + mining wired. The script also ran its own _verifyDeployment on the simulated state; dry run passed before the broadcast."
+    "reads": "cast reads against https://sepolia.base.org after the broadcast (3 Nov 2026): supply 100B, name B20MINER / MINER; balances claim vault 61B, finalizer 25B, ecosystem 5B, team 1B, community 8B, pool/deployer 0; MINING_DURATION 86400, miningOpened false, MINING_OPENER = deployer v15, OPEN_DEADLINE 1794268430; MinerPool opened false, MINER/BURNER/FINALIZER wired, WINDOW 600, MAX_DRIFT 600, MAX_BID_BPS 25; finalizer minerPool + mining wired. Every address equals the dry run made before the broadcast."
   },
-  "notes": "New deployer v14 (funded 0.04 ETH from v13, tx 0x5f9344f68db02f4aac3d877002c853dc7d956febdf028bbc9f52d37b5b9a20ce). Mining is NOT opened by this deployment; the opener (deployer v14) sends openMining() via scripts/deploy-v16.sh open after the servers and sites switch. The 30 Oct v16 genesis (launch-flow-v8-*, MinerPool 0xA5A1\u202637D5 without the H-1 fix) is retired."
+  "notes": "New deployer v15 (funded 0.03 ETH from v14). Mining is NOT opened by this deployment; the opener (deployer v15) sends openMining() via scripts/deploy-v16.sh open after the servers and sites switch. The 31 Oct genesis (launch-flow-v9-deployment-record.json, MINER 0xb200…dEa9) is retired; it was never finalized.",
+  "replaces": {
+    "record": "launch-flow-v9-deployment-record.json",
+    "b20Mining": "0x95442C94D2Ff303B115Ee029Ccd94D9B8C7Ca6A2"
+  }
 }

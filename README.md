@@ -12,7 +12,7 @@ wallet.
 | Path | What it holds |
 | --- | --- |
 | `contracts/src` | Genesis: `B20Mining`, `B20WalletBinding`, `B20EligibleNFT`, `B20PublicNFT`, `B20NFTRevenueVault`, `B20ClaimVault`, `B20LiquidityFinalizer`, `MinerPool`, `MinerBurner`, `B20TeamVesting`, `B20EcosystemVault`, `B20CommunityVault` |
-| `contracts/src/launchpad` | `LaunchpadFactory`, `MiningCampaign`, `CampaignPool`, `LaunchpadHook`, `PositionLocker`, `LaunchpadSwapRouter` |
+| `contracts/src/launchpad` | `LaunchpadFactory`, `MiningCampaign`, `CampaignPool`, `LaunchpadHook`, `PositionLocker`, `LaunchpadSwapRouter`, `TestMinerLauncher` (test network only) |
 | `contracts/src/wallet` | `MinerWalletFactory`, `MinerWallet`, `MinerRelay` |
 | `contracts/test` | Unit, integration, invariant and fork tests |
 | `contracts/script` | The deploy scripts used on Base Sepolia |
@@ -39,42 +39,60 @@ the public RPCs. They place mock B20 code at the native B20 address, which
 
 ## Base Sepolia deployment
 
-Test network deployment of 31 October 2026. On Base Sepolia the mining and
+Test network deployment of 3 November 2026. On Base Sepolia the mining and
 claim windows are 1 day each; on Base they are 15 days.
+
+MINER genesis (mined on Base mainnet at launch; this copy is the test
+network rehearsal):
 
 | Contract | Address |
 | --- | --- |
-| MINER | `0xb200000000000000000000c9FEC3181Ce714dEa9` |
-| B20Mining | `0x95442C94D2Ff303B115Ee029Ccd94D9B8C7Ca6A2` |
-| B20WalletBinding | `0x9Ab79D1B5c0eC5Ba9f4C9B9C5e29F9F9dB6e8666` |
-| B20EligibleNFT | `0x602EB357c534bFE4b0Fb345e00DC7dDD7f7249cE` |
-| B20PublicNFT | `0x6262B87062D6A866a28DA1B8c94B0d39597Cb3a2` |
-| B20NFTRevenueVault | `0xf53B2668c6335441b951FF270F4528c3A09e8b64` |
-| B20ClaimVault | `0xeec4190f14F8F309d1E7FFC41080B72Bb6DEcb6e` |
-| B20LiquidityFinalizer | `0xEA4fd0079A5B5b0824bc5576B1Bc26E3Baa15E5a` |
-| MinerPool | `0x6d119d233A438c8322b305a24B843186b5409798` |
-| MinerBurner | `0xef5A4DEA639E2c3f77F4BA0e63A97Eb5cd9dEc33` |
-| B20TeamVesting | `0xD6A865D52Cb75c523E9F5521E4f22cE7343c252e` |
-| B20EcosystemVault | `0x34Ef0be6c90fde87c3B4695469D1Ab74ca75961C` |
-| B20CommunityVault | `0x4c16Df187437BcDa50a6a75Acb5ac0890B708726` |
-| LaunchpadFactory | `0x7e8220d399eeA7EE2b5c00152C12F692de6eeF7A` |
-| MiningCampaign (implementation) | `0x5E01251E46c2DC733e76F2ccB9E9375d61446222` |
-| CampaignPool (implementation) | `0x7dcE57938be7a94eCf68950dc243aC7454db7dD3` |
-| PositionLocker | `0xd579964df76f722dB7c480aE13D87180DCFA06ff` |
-| LaunchpadHook | `0x372557A2E0da7cc11FB6d4788720540ee19420cC` |
+| MINER | `0xb200000000000000000000f05e939E87Fc68e8e5` |
+| B20Mining | `0x1d94eE4CfdA776CeeD4625583E17104592D5e2B0` |
+| B20WalletBinding | `0x90c4696A23fc4F01af54ff373F4E62c28270F44b` |
+| B20EligibleNFT | `0xE2fD2054df2e1A85A76F6E15F6d74520eC143211` |
+| B20PublicNFT | `0x667107bB2B053a58156Ac54297ED6403B9dC81B0` |
+| B20NFTRevenueVault | `0xfB1d72976923ddF41dD4A47E2b94b6a58105460c` |
+| B20ClaimVault | `0x34018C4b59903946746d5FdDA4443826957d5bC9` |
+| B20LiquidityFinalizer | `0x4feCC1E4d020dDa069662161E369cB2cb47f9CA8` |
+| MinerPool | `0xF07aebdda0088DbA21Fb7d162835d306d60cad3f` |
+| MinerBurner | `0xd946b2867A9615766F76A921309254613209dF2f` |
+| B20TeamVesting | `0xb02aBaf1E6eb55DD8D018A41938258A982d354B2` |
+| B20EcosystemVault | `0x7d7D55073A6608031751e77713f137b984154fcb` |
+| B20CommunityVault | `0xB1fC9d3Df02AAF8f10d5eC9aC9C7Ad687283d7A9` |
+
+tMINER, the test network token the Launchpad pays its MINER share into.
+`TestMinerLauncher` creates it and opens a pool built from the same
+`MinerPool` and `MinerBurner` code as MINER:
+
+| Contract | Address |
+| --- | --- |
+| tMINER | `0xb2000000000000000000003c123A342354B84588` |
+| MinerPool (tMINER) | `0xD5C1Ebbe65c7478e1353ED8FDAE796331f357eEE` |
+| MinerBurner (tMINER) | `0x6c42852c173456c0a1aF4790fD0a7F1420E2D106` |
+| TestMinerLauncher | `0x40FFD8f1C061fe555578599C138b64cC2b1B10A1` |
+
+Launchpad and mining wallet:
+
+| Contract | Address |
+| --- | --- |
+| LaunchpadFactory | `0x95814C2FF4005FcA3545c0a9d9aA20DA92f7644a` |
+| MiningCampaign (implementation) | `0x34b8f8184aA6E966Ff9fdb91F7d5B1E48bBDc863` |
+| CampaignPool (implementation) | `0x22def2894055DFD2A72A5bc62a956ad20f323918` |
+| PositionLocker | `0x95dEdc31De8Ce15447d663db6232436b694F711c` |
+| LaunchpadHook | `0x6789bC7845e85B3d49fB01f102b1768dF079A0Cc` |
 | LaunchpadSwapRouter | `0xb817581D358D6F12a5A789b25CE263694C04eaC3` |
-| MinerWalletFactory (v13, 2 Nov 2026) | `0xfbFF0386BbC2E1099c691BeBd8Fb56b1Df0d66D5` |
-| MinerWallet (implementation, v13) | `0x6C1225717F2470B551A1e79560a2D65FB545fd45` |
+| MinerWalletFactory | `0x3b4Ed45Df443Ca1714B7F584538C4dF8b8472984` |
+| MinerWallet (implementation) | `0xe204a4E0E3Ee7697d3c52614C6e52E6e9CC35d8D` |
 | MinerRelay | `0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165` |
 
 The source of these contracts is verified on [Sourcify](https://sourcify.dev).
-The tag `sepolia-v17` marks the commit they were deployed from. The mining
-wallet factory was replaced on 2 November 2026 (v13) after our internal
-audit (finding M-1: the relay gas refund now counts only the exact call
-data and caps the gas price at the base fee plus 0.01 gwei). The v12 factory
-`0xe9A014A76c3A44c3bcda1954521E81648aF00608` (implementation
-`0x4e5bC558a9897C95346D219dB9F845e11aA92e93`) stays on chain; the apps let
-its wallets withdraw only.
+The tag `sepolia-v19` marks the commit they were deployed from. The swap
+router and the relay contract are unchanged from earlier deployments and
+were reused. Earlier mining wallet factories, including
+`0xe1939bc8B7c96Ec7aDc37c1472c02f09792bAE5C` and
+`0xfbFF0386BbC2E1099c691BeBd8Fb56b1Df0d66D5`, stay on chain; the apps let
+their wallets withdraw only.
 
 To rebuild the deployed bytecode (metadata hash included), compile the
 contracts alone with solc 0.8.35. A full `base-forge build` also compiles the

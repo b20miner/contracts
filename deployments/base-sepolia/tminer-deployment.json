@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "product": "tminer",
+  "design": "TestMinerLauncher: mainnet MinerPool code, opened at once (owner, 3 Nov 2026)",
+  "deployer": "0x63f0632a616eb7cc89C95C1b9c044C6C6c6Cc46e",
+  "firstNonce": 19,
+  "checksPassed": 17,
+  "contracts": {
+    "b20Token": "0xb2000000000000000000003c123A342354B84588",
+    "tMiner": "0xb2000000000000000000003c123A342354B84588",
+    "minerPool": "0xD5C1Ebbe65c7478e1353ED8FDAE796331f357eEE",
+    "minerBurner": "0x6c42852c173456c0a1aF4790fD0a7F1420E2D106",
+    "testMinerLauncher": "0x40FFD8f1C061fe555578599C138b64cC2b1B10A1"
+  },
+  "dependencies": {
+    "uniswapV4PoolManager": "0x05E73354cFDd6745C338b50BcFDfA3Aa6fA03408"
+  },
+  "parameters": {
+    "name": "B20MINER Test",
+    "symbol": "tMINER",
+    "openingEthWei": "20000000000000000",
+    "openingMinerPerEth": 6000000,
+    "openingLiquidity": "48989794855663561963",
+    "totalSupplyWei": "119999999999999999997681",
+    "opensAt": "deploy"
+  }
+}

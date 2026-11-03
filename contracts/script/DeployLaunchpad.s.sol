@@ -441,7 +441,7 @@ contract DeployLaunchpad is Script {
         _check(address(m.MINER()) == config.miner, "MINER pool token = MINER");
         _check(address(m.POOL_MANAGER()) == _poolManager(), "MINER pool manager");
         _check(address(m.BURNER().MINER()) == config.miner, "MINER pool fees burn through MINER's burner");
-        _check(m.FINALIZER().code.length > 0, "MINER pool opens only by the B20MINER finalizer");
+        _check(m.FINALIZER().code.length > 0, "MINER pool opens only by its contract (B20MINER finalizer; testnet: the tMINER launcher)");
         _check(
             m.FEE() == 3_000 && m.TICK_SPACING() == 60 && address(m.poolKey().hooks) == address(0),
             "hookless V4 pool, 0.30% fee, tick spacing 60"
@@ -554,7 +554,7 @@ contract DeployLaunchpad is Script {
         }
     }
 
-    function _parametersJson(Deployment memory d, Config memory config) internal pure returns (string memory) {
+    function _parametersJson(Deployment memory d, Config memory config) internal view returns (string memory) {
         return string.concat(
             '"parameters":{"platformTreasury":"',
             vm.toString(config.platformTreasury),
@@ -576,7 +576,9 @@ contract DeployLaunchpad is Script {
             vm.toString(config.directLaunchFdvWei),
             '"},"tokensPerEthAtOneBillion":"100000000","tokensPerProof":"',
             vm.toString(PROOF_FEE_WEI * 100_000_000 / 1 ether),
-            '","miningShareBps":{"twoX":6000,"oneX":4000},"walletCapWei":{"min":"10000000000000000","max":"500000000000000000","appDefault":"50000000000000000"},"openingBufferWei":"1500000000000000000","allowlist":false,"openingMultiples":[2,1],"defaultOpeningMultiple":2,"minimumPool":false,"instantLaunch":true,"platformShareBps":{"min":100,"max":500,"steps":5,"rampOfReserveBps":2000,"fullSellOutBps":460},"maxPoolShareBps":9541,"shareMining":{"sharesPerProof":16,"shareTargetBits":20,"partialBatch":false},"depositCapWei":{"twoX":"775400000000000000","oneX":"683600000000000000"},"instantCreatorBuy":{"limit":"none","antiSnipeSurcharge":false,"tradingFee":true},"nameMaxBytes":32,"symbolMaxBytes":10,"staking":false,"minerPool":{"openingMinerPerEth":6000000,"lpFeePips":3000,"tickSpacing":60,"hooks":"none","ethFees":"buy support","minerFees":"burned (MinerBurner)","minerShareAsBuySupport":true,"gridTicks":600,"bandTicks":6960,"opensAt":"B20MINER finalize","flushBy":"anyone (relay keeper after sweep)"}}'
+            '","miningShareBps":{"twoX":6000,"oneX":4000},"walletCapWei":{"min":"10000000000000000","max":"500000000000000000","appDefault":"50000000000000000"},"openingBufferWei":"1500000000000000000","allowlist":false,"openingMultiples":[2,1],"defaultOpeningMultiple":2,"minimumPool":false,"instantLaunch":true,"platformShareBps":{"min":100,"max":500,"steps":5,"rampOfReserveBps":2000,"fullSellOutBps":460},"maxPoolShareBps":9541,"shareMining":{"sharesPerProof":16,"shareTargetBits":20,"partialBatch":false},"depositCapWei":{"twoX":"775400000000000000","oneX":"683600000000000000"},"instantCreatorBuy":{"limit":"none","antiSnipeSurcharge":false,"tradingFee":true},"nameMaxBytes":32,"symbolMaxBytes":10,"staking":false,"minerPool":{"openingMinerPerEth":6000000,"lpFeePips":3000,"tickSpacing":60,"hooks":"none","ethFees":"buy support","minerFees":"burned (MinerBurner)","minerShareAsBuySupport":true,"gridTicks":600,"bandTicks":6960,"opensAt":"',
+            d.minerPool.opened() ? "open at deploy (testnet tMINER)" : "B20MINER finalize",
+            '","flushBy":"anyone (relay keeper after sweep)"}}'
         );
     }
 

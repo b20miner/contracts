@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "purpose": "tMINER for the public Base Sepolia Launchpad (owner, 3 Nov 2026: MINER mines on Base mainnet; the testnet Launchpad pays its MINER share into tMINER). TestMinerLauncher deploys mainnet MINER's MinerPool + MinerBurner code unchanged, creates tMINER through Base's B20 factory (supply = opening ETH x 6,000,000, all in the pool, BURN_ROLE to the burner only, no admin or minter) and opens the pool in the same transaction.",
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "broadcastCompletedAt": "2026-11-03T00:45:56Z",
+  "deployer": "0x63f0632a616eb7cc89C95C1b9c044C6C6c6Cc46e",
+  "deployerKeystore": "b20-sepolia-deployer-v15",
+  "firstNonce": 19,
+  "blockRange": {
+    "first": 53724431,
+    "last": 53724431
+  },
+  "actualDeploymentCostWei": {
+    "l2Execution": "35444226000000",
+    "l1Data": "26518039",
+    "total": "35444252518039"
+  },
+  "gasUsed": 5907371,
+  "transactions": [
+    {
+      "contract": "TestMinerLauncher",
+      "address": "0x40ffd8f1c061fe555578599c138b64cc2b1b10a1",
+      "transactionHash": "0x68c904deb85f3b5f5bfe21b2797fe49fa8ec04ec10ba9838e49f3a5d8ccad22c",
+      "block": 53724431,
+      "nonce": 19,
+      "status": "success",
+      "gasUsed": 5907371,
+      "alsoCreated": [
+        {
+          "contract": "MinerBurner",
+          "address": "0x6c42852c173456c0a1af4790fd0a7f1420e2d106"
+        },
+        {
+          "contract": "MinerPool",
+          "address": "0xd5c1ebbe65c7478e1353ed8fdae796331f357eee"
+        }
+      ]
+    }
+  ],
+  "contracts": {
+    "b20Token": "0xb2000000000000000000003c123A342354B84588",
+    "tMiner": "0xb2000000000000000000003c123A342354B84588",
+    "minerPool": "0xD5C1Ebbe65c7478e1353ED8FDAE796331f357eEE",
+    "minerBurner": "0x6c42852c173456c0a1aF4790fD0a7F1420E2D106",
+    "testMinerLauncher": "0x40FFD8f1C061fe555578599C138b64cC2b1B10A1"
+  },
+  "dependencies": {
+    "uniswapV4PoolManager": "0x05E73354cFDd6745C338b50BcFDfA3Aa6fA03408"
+  },
+  "parameters": {
+    "name": "B20MINER Test",
+    "symbol": "tMINER",
+    "openingEthWei": "20000000000000000",
+    "openingMinerPerEth": 6000000,
+    "openingLiquidity": "48989794855663561963",
+    "totalSupplyWei": "119999999999999999997681",
+    "opensAt": "deploy",
+    "openingEthNote": "includes 0.02 ETH sent with the transaction (TMINER_OPENING_ETH default)"
+  },
+  "verification": {
+    "checksDuringRun": 17,
+    "checksFromLiveChain": 17,
+    "checksNote": "verifyRecorded() re-ran 17/17 against https://sepolia.base.org on 2026-11-03; the dry run before the broadcast passed 17 with the same addresses."
+  },
+  "rehearsal": "miner-app/scripts/local-tminer-v19-fork.mjs 17/17 on a Base Sepolia fork before the broadcast"
+}

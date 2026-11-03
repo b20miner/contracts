@@ -76,7 +76,12 @@ contract DeployMinerWallet is Script {
         revert UnsupportedChain(block.chainid);
     }
 
+    /// @dev Base mainnet has no Launchpad (testnet-first, 12 Oct 2026): its
+    /// wallets trust no campaign factory (zero) unless `LAUNCHPAD_FACTORY`
+    /// names one; an owner can add one later (`proposeFactory`, 48 hours).
+    /// Base Sepolia trusts the Launchpad its record names.
     function _launchpadFactory() internal view returns (address) {
+        if (block.chainid == BASE_CHAIN_ID) return vm.envOr("LAUNCHPAD_FACTORY", address(0));
         string memory json = vm.readFile(
             string.concat(vm.projectRoot(), "/../deployments/", _networkName(), "/launchpad-deployment.json")
         );
@@ -116,7 +121,11 @@ contract DeployMinerWallet is Script {
         _check(impl.FACTORY() == address(factory), "implementation is initialised only by this factory");
         _check(impl.B20_MINING() == mining, "B20MINER mining contract (genesis record)");
         _check(mining.code.length > 0, "B20Mining has code");
-        _check(impl.LAUNCHPAD_FACTORY() == launchpad && launchpad.code.length > 0, "Launchpad factory (current)");
+        _check(
+            impl.LAUNCHPAD_FACTORY() == launchpad
+                && (launchpad.code.length > 0 || (launchpad == address(0) && block.chainid == BASE_CHAIN_ID)),
+            "Launchpad factory (current; none on Base mainnet)"
+        );
         _check(impl.owner() == address(0xdead) && impl.epoch() == 0, "implementation is unusable (owner 0xdead)");
         _check(impl.RELAY_OVERHEAD() == 12_000 && impl.L1_ENVELOPE() == 120, "relay overhead 12,000 gas, L1 envelope 120 bytes");
         _check(impl.FINISH_GAS() == 60_000, "60,000 gas kept for the refund after the target call");

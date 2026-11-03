@@ -1,29 +1,47 @@
 {
   "schemaVersion": 1,
-  "purpose": "B20 Miner mining wallet contract on Base Sepolia, relayed-orders version, factory v13 (2 Nov 2026): same trust as v12 (the H-1 genesis's B20Mining and Launchpad v17) plus the internal audit v17 M-1 refund fix (canonical calldata only, a resent ownerSig not refunded, refund price capped at base fee + 0.01 gwei).",
+  "purpose": "B20 Miner mining wallet contract on Base Sepolia, relayed-orders version, factory v15 (3 Nov 2026): the v14 code trusting the same genesis B20Mining and Launchpad v19.",
   "network": "base-sepolia",
   "chainId": 84532,
-  "broadcastCompletedAt": "2026-11-02T14:09:47Z",
-  "deployer": "0xF9495886D18dE9bc9c54Be8770872fDd900B74cf",
-  "deployerKeystore": "b20-sepolia-deployer-v14",
-  "firstNonce": 20,
+  "broadcastCompletedAt": "2026-11-03T00:46:44Z",
+  "deployer": "0x63f0632a616eb7cc89C95C1b9c044C6C6c6Cc46e",
+  "deployerKeystore": "b20-sepolia-deployer-v15",
+  "firstNonce": 25,
   "blockRange": {
-    "first": 53533592,
-    "last": 53533592
+    "first": 53724670,
+    "last": 53724670
   },
   "actualDeploymentCostWei": {
     "l2Execution": "27189792000000",
-    "l1Data": "8855",
-    "total": "27189792008855"
+    "l1Data": "22178574",
+    "total": "27189814178574"
   },
+  "gasUsed": 4531632,
+  "transactions": [
+    {
+      "contract": "MinerWalletFactory",
+      "address": "0x3b4ed45df443ca1714b7f584538c4df8b8472984",
+      "transactionHash": "0x40f30079016d56cf7d975888edc36eebedfe1f0e3dcd90ac59cf07f3b9dc05d3",
+      "block": 53724670,
+      "nonce": 25,
+      "status": "success",
+      "gasUsed": 4531632,
+      "alsoCreated": [
+        {
+          "contract": "MinerWallet",
+          "address": "0xe204a4e0e3ee7697d3c52614c6e52e6e9cc35d8d"
+        }
+      ]
+    }
+  ],
   "contracts": {
-    "minerWalletFactory": "0xfbFF0386BbC2E1099c691BeBd8Fb56b1Df0d66D5",
-    "minerWalletImplementation": "0x6C1225717F2470B551A1e79560a2D65FB545fd45",
+    "minerWalletFactory": "0x3b4Ed45Df443Ca1714B7F584538C4dF8b8472984",
+    "minerWalletImplementation": "0xe204a4E0E3Ee7697d3c52614C6e52E6e9CC35d8D",
     "minerRelay": "0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165"
   },
   "dependencies": {
-    "b20Mining": "0x95442C94D2Ff303B115Ee029Ccd94D9B8C7Ca6A2",
-    "launchpadFactory": "0x7e8220d399eeA7EE2b5c00152C12F692de6eeF7A"
+    "b20Mining": "0x1d94eE4CfdA776CeeD4625583E17104592D5e2B0",
+    "launchpadFactory": "0x95814C2FF4005FcA3545c0a9d9aA20DA92f7644a"
   },
   "parameters": {
     "model": "relayed-orders",
@@ -43,25 +61,11 @@
     "upgradeable": false,
     "walletsPerOwner": 1
   },
-  "transactions": [
-    {
-      "contract": "MinerWalletFactory",
-      "address": "0xfbff0386bbc2e1099c691bebd8fb56b1df0d66d5",
-      "transactionHash": "0xee3432e3529326bafdd410a881fcf272343681702e2efe4224962ef43491bc47",
-      "block": 53533592,
-      "nonce": 20,
-      "status": "success",
-      "alsoCreated": {
-        "MinerWallet": "0x6C1225717F2470B551A1e79560a2D65FB545fd45"
-      }
-    }
-  ],
   "verification": {
     "checksDuringRun": 13,
     "checksFromLiveChain": 13,
-    "checksNote": "verifyRecorded() on 2026-11-02 from https://sepolia.base.org: 13/13; dry run before the broadcast 13/13; runtime metadata hash of factory and implementation equals the local build."
+    "checksNote": "verifyRecorded() on 2026-11-03 from https://sepolia.base.org: 13/13."
   },
-  "notes": "Internal audit v17 M-1 (docs/CONTRACT_SECURITY_AUDIT_V17.md): a stolen permission key could pad relayed calldata and profit from the gas refund. Clones cannot be upgraded, so v13 is a new factory; v12 wallets stay withdraw-only in the apps (the relay still carries their orders while users move).",
   "supersedes": [
     {
       "record": "miner-wallet-deployment-record-v1.json",
@@ -122,6 +126,16 @@
       "record": "miner-wallet-deployment-record-v12.json",
       "minerWalletFactory": "0xe9A014A76c3A44c3bcda1954521E81648aF00608",
       "reason": "internal audit v17 M-1: padded calldata turned the relay refund into a profit for a stolen key"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v13.json",
+      "minerWalletFactory": "0xfbFF0386BbC2E1099c691BeBd8Fb56b1Df0d66D5",
+      "reason": "trusts the retired 31 Oct genesis and Launchpad v17"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v14.json",
+      "minerWalletFactory": "0xe1939bc8B7c96Ec7aDc37c1472c02f09792bAE5C",
+      "reason": "trusts Launchpad v18, retired for v19 (tMINER)"
     }
   ],
   "reused": {

@@ -110,13 +110,14 @@ contract B20SystemIntegrationTest is BaseTest {
         _bindOwnerA();
         _bindOwnerB();
 
-        // The launch order: allocations may be confirmed before mining opens.
-        _confirmOwnerAAllocation();
-        _mintAndConfirmOwnerBAllocation();
-
+        // The launch order (2 Nov 2026): the opener's `openMining()` opens
+        // NFT minting and allocation confirmation together with mining.
         vm.warp(MINING_START);
         vm.prank(opener);
         mining.openMining();
+
+        _confirmOwnerAAllocation();
+        _mintAndConfirmOwnerBAllocation();
 
         _submitProofs();
     }

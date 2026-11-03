@@ -3,7 +3,7 @@
   "network": "base-sepolia",
   "chainId": 84532,
   "addresses": {
-    "deployer": "0xF9495886D18dE9bc9c54Be8770872fDd900B74cf",
+    "deployer": "0x63f0632a616eb7cc89C95C1b9c044C6C6c6Cc46e",
     "operationsTreasury": "0xc4B142895A3B3bf86e83E5468F0744c7bEa29012",
     "ecosystemManager": "0xc58d72C20d33aE509672277914be119B6F99e5C5",
     "teamBeneficiary": "0xDBe9DbEA83D196368fF16342e73eC597086b18Af",

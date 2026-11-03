@@ -247,3 +247,25 @@ elsewhere. The apps and the indexer use only the official pool.
 - The Low and Info items are addressed in each contract's next version.
 
 Report a security problem privately: see [SECURITY.md](../SECURITY.md).
+
+## Appendix B — Change after the audit: opening gate (2 Nov 2026)
+
+Owner decision (2 Nov 2026): NFT minting and allocation confirmation open
+only with `openMining()`, not at deployment, so the published mainnet
+addresses cannot be used (for example to mint all 10,000 Public NFTs)
+before the launch. Change in `B20Mining` only:
+
+- `mintingOpenFor(wallet)` is now `miningOpened && !allocationConfirmed[wallet] && !miningEnded()`.
+- `confirmAllocation` reverts `MiningNotOpened` before `openMining()`.
+
+Review: the change only narrows when two existing paths can run; no new
+state, no new role, no new external call. `openMining()` keeps its rules
+(`MINING_OPENER`, or anyone from `OPEN_DEADLINE`), so an absent opener
+still cannot freeze minting or confirmation. Activation
+(`B20WalletBinding`) is unchanged and works before the opening. Tests:
+`test_beforeOpening_windowReadsFailClosed` (both closed before),
+`test_openMining_opensMintingAndConfirmation` (both open after), the
+integration and both rehearsal fork tests re-ordered to open first;
+contract suite 497/498 (the one failure is `B20Receivers.fork`, which reads
+a live v17 Sepolia holder and is environment-dependent, unrelated).
+Verdict for `B20Mining`: PASS (unchanged).

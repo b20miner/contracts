@@ -18,14 +18,16 @@ import {IB20PublicNFT} from "./interfaces/IB20PublicNFT.sol";
 ///
 /// Launch flow (`docs/MINING_WEB_APP_V1.md` §2, owner decision of
 /// 24 September 2026):
-/// 1. Deploy. NFT minting and allocation confirmation are open; mining
-///    is not.
+/// 1. Deploy. Nothing is open yet: no NFT minting, no allocation
+///    confirmation, no mining (owner decision of 2 November 2026, so the
+///    published addresses cannot be used before the launch).
 /// 2. `openMining()` — called once by `MINING_OPENER`, or by anyone at or
 ///    after `OPEN_DEADLINE` so an absent opener cannot freeze the
-///    protocol. It fixes `[MINING_START, MINING_END)` = `[now, now +
+///    protocol. It opens NFT minting, allocation confirmation and mining
+///    together, fixes `[MINING_START, MINING_END)` = `[now, now +
 ///    MINING_DURATION)` and derives the global mining seed in the same
-///    transaction. The opener gains nothing else: no quota, no setter, no
-///    second call.
+///    transaction. Everything after it runs on those times alone. The
+///    opener gains nothing else: no quota, no setter, no second call.
 /// 3. `confirmAllocation()` — each owner wallet, once, freezes its quota:
 ///    the snapshot base allocation (Merkle-proven) plus whatever NFT
 ///    quota it holds at that moment. From then on both NFT collections
@@ -366,10 +368,11 @@ contract B20Mining is ReentrancyGuard {
         return miningOpened && block.timestamp >= _miningEnd;
     }
 
-    /// @notice Whether `wallet` may still mint NFTs: until it confirms its
-    /// allocation and until mining ends. Both NFT collections enforce it.
+    /// @notice Whether `wallet` may mint NFTs: from `openMining()` until it
+    /// confirms its allocation and until mining ends. Both NFT collections
+    /// enforce it.
     function mintingOpenFor(address wallet) external view returns (bool) {
-        return !allocationConfirmed[wallet] && !miningEnded();
+        return miningOpened && !allocationConfirmed[wallet] && !miningEnded();
     }
 
     // ---------------------------------------------------------------
@@ -380,9 +383,9 @@ contract B20Mining is ReentrancyGuard {
     /// its snapshot base allocation (`baseAllocation` whole MINER, proven
     /// by `snapshotProof` against the frozen Merkle root; pass `0` and an
     /// empty proof for a wallet outside the snapshot) plus its current
-    /// Eligible bonus and Public NFT quota. Open from deployment until
-    /// `MINING_END`; does not require mining to be open or a mining wallet
-    /// to be bound. Afterwards the quota cannot change and both NFT
+    /// Eligible bonus and Public NFT quota. Open from `openMining()` until
+    /// `MINING_END` (reverts `MiningNotOpened` before); does not require a
+    /// mining wallet to be bound. Afterwards the quota cannot change and both NFT
     /// collections refuse new mints to this wallet.
     ///
     /// A wallet holding Eligible NFTs must supply its base allocation —
@@ -390,6 +393,7 @@ contract B20Mining is ReentrancyGuard {
     /// `MissingBaseAllocation`.
     function confirmAllocation(uint256 baseAllocation, bytes32[] calldata snapshotProof) external {
         address ownerWallet = msg.sender;
+        if (!miningOpened) revert MiningNotOpened();
         if (allocationConfirmed[ownerWallet]) revert AllocationAlreadyConfirmed(ownerWallet);
         if (miningEnded()) revert AllocationClosed();
 

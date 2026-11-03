@@ -13,10 +13,12 @@ interface IToken {
 /// receiver the token refuses would stop distribution (and the pool's opening)
 /// for good. Runs against live Base Sepolia (base-forge, real precompile).
 contract B20ReceiversForkTest is Test {
-    IToken constant TOKEN = IToken(0xB200000000000000000000fF9a74517857964363); // MINETEST (v17)
-    address constant HOLDER = 0x9a68a80018804DacE946B0f4Dd5E0a6EC31c0f7b;
+    // 3 Nov 2026: the v17 MINETEST holder sold out, so the sender is now the
+    // live Sepolia genesis's claim vault, holding MINER (deployer v15).
+    IToken constant TOKEN = IToken(0xb200000000000000000000f05e939E87Fc68e8e5); // MINER (3 Nov 2026 genesis)
+    address constant HOLDER = 0x34018C4b59903946746d5FdDA4443826957d5bC9; // its B20ClaimVault
     address constant CAMPAIGN = 0x15C908c3A5C38e8Ba3aE595EaC1A2A0782Ff6C4A;
-    address constant MINER = 0xb200000000000000000000c9FEC3181Ce714dEa9;
+    address constant MINER = 0xb200000000000000000000c9FEC3181Ce714dEa9; // a retired MINER
 
     function setUp() public {
         vm.createSelectFork("https://sepolia.base.org");

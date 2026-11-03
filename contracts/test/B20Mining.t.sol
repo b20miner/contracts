@@ -429,7 +429,22 @@ contract B20MiningTest is Test {
         assertEq(end, 0);
         assertEq(deadline, OPEN_DEADLINE);
         assertFalse(mining.miningEnded());
+        // Nothing opens before `openMining()` (2 Nov 2026): no NFT mint, no confirm.
+        assertFalse(mining.mintingOpenFor(owner));
+        vm.prank(owner);
+        vm.expectRevert(B20Mining.MiningNotOpened.selector);
+        mining.confirmAllocation(0, new bytes32[](0));
+    }
+
+    /// `openMining()` opens NFT minting and allocation confirmation together
+    /// with mining.
+    function test_openMining_opensMintingAndConfirmation() public {
+        assertFalse(mining.mintingOpenFor(owner));
+        _ensureOpened(mining);
         assertTrue(mining.mintingOpenFor(owner));
+        _confirm(mining, owner);
+        assertTrue(mining.allocationConfirmed(owner));
+        assertFalse(mining.mintingOpenFor(owner));
     }
 
     /// The opener opens mining: the window is exactly [now, now + 15 days)
@@ -477,11 +492,10 @@ contract B20MiningTest is Test {
         mining.openMining();
     }
 
-    /// A proof is rejected before mining is open, even with a confirmed
-    /// allocation and an active binding.
+    /// A proof is rejected before mining is open, even with an active
+    /// binding (confirmation itself needs mining open since 2 Nov 2026).
     function test_submitProof_rejectsBeforeOpening() public {
         binding.setActive(owner, minerA);
-        _confirm(mining, owner);
 
         vm.prank(minerA);
         vm.expectRevert(B20Mining.MiningNotOpened.selector);
@@ -533,6 +547,7 @@ contract B20MiningTest is Test {
     /// A real production Merkle fixture confirms the base quota, before
     /// mining is open and without any mining wallet.
     function test_confirmAllocation_registersBaseQuotaWithRealFixture() public {
+        _ensureOpened(mining);
         (address wallet, uint256 allocation, bytes32[] memory proof) = _loadFixture(0);
 
         vm.expectEmit(true, false, false, true, address(mining));
@@ -548,6 +563,7 @@ contract B20MiningTest is Test {
 
     /// A wrong wallet, wrong allocation, or wrong proof is rejected.
     function test_confirmAllocation_rejectsWrongWalletAllocationOrProof() public {
+        _ensureOpened(mining);
         (address wallet, uint256 allocation, bytes32[] memory proof) = _loadFixture(0);
 
         vm.prank(otherOwner);
@@ -570,6 +586,7 @@ contract B20MiningTest is Test {
 
     /// An allocation is confirmed exactly once.
     function test_confirmAllocation_onlyOnce() public {
+        _ensureOpened(mining);
         _confirm(mining, owner);
         vm.prank(owner);
         vm.expectRevert(abi.encodeWithSelector(B20Mining.AllocationAlreadyConfirmed.selector, owner));
@@ -579,6 +596,7 @@ contract B20MiningTest is Test {
     /// NFT quota gained after confirmation never reaches the mining
     /// contract (the real collections refuse such mints anyway).
     function test_confirmAllocation_quotaIsFrozen() public {
+        _ensureOpened(mining);
         _confirm(mining, owner);
         publicMock.setQuota(owner, 50_000 * 1e18);
         eligibleMock.setBonus(owner, 1_000 * 1e18);
@@ -588,6 +606,7 @@ contract B20MiningTest is Test {
 
     /// A Public-NFT-only owner confirms without any snapshot proof.
     function test_confirmAllocation_publicNftOnlyOwner() public {
+        _ensureOpened(mining);
         _confirm(mining, owner);
 
         assertEq(mining.baseQuota(owner), 0);
@@ -596,6 +615,7 @@ contract B20MiningTest is Test {
 
     /// Eligible bonus + Public quota + base quota sum correctly.
     function test_confirmAllocation_combinesBasePlusEligiblePlusPublic() public {
+        _ensureOpened(mining);
         (address wallet, uint256 allocation, bytes32[] memory proof) = _loadFixture(0);
         eligibleMock.setBonus(wallet, 500 * 1e18);
         publicMock.setQuota(wallet, 10_000 * 1e18);
@@ -613,6 +633,7 @@ contract B20MiningTest is Test {
     /// A wallet holding an Eligible bonus cannot confirm without its base
     /// allocation — that would silently forfeit it.
     function test_confirmAllocation_eligibleHolderMustSupplyBase() public {
+        _ensureOpened(mining);
         (address wallet,,) = _loadFixture(0);
         eligibleMock.setBonus(wallet, 500 * 1e18);
 
@@ -644,6 +665,7 @@ contract B20MiningTest is Test {
     /// the cap. The shared over-cap-reverts code path is confirmed via the
     /// NFT cap below and via `test_baseQuotaCap_hasExpectedValue`.
     function test_confirmAllocation_rejectsNftQuotaCapExceeded() public {
+        _ensureOpened(mining);
         uint256 cap = mining.NFT_QUOTA_CAP();
         uint256 tooMuch = cap + 1;
         publicMock.setQuota(owner, tooMuch);
@@ -660,6 +682,7 @@ contract B20MiningTest is Test {
 
     /// An owner with no snapshot and no NFT quota is rejected.
     function test_confirmAllocation_rejectsOwnerWithNoAuthorizedQuota() public {
+        _ensureOpened(mining);
         vm.prank(stranger);
         vm.expectRevert(abi.encodeWithSelector(B20Mining.NoAuthorizedQuota.selector, stranger));
         mining.confirmAllocation(0, new bytes32[](0));
@@ -1101,6 +1124,7 @@ contract B20MiningTest is Test {
     /// allocation (no NFT quota) has the entire reward drawn from base
     /// quota.
     function test_submitProof_baseOnlyQuotaConsumption() public {
+        _ensureOpened(mining);
         (address wallet, uint256 allocation, bytes32[] memory proof) = _loadFixture(0);
         binding.setActive(wallet, minerA);
         vm.prank(wallet);
@@ -1119,6 +1143,7 @@ contract B20MiningTest is Test {
     /// 10. Mixed quota: NFT is consumed first, leaving base quota
     /// completely untouched while NFT has enough headroom on its own.
     function test_submitProof_nftFirstConsumptionOrder() public {
+        _ensureOpened(mining);
         (address wallet, uint256 allocation, bytes32[] memory proof) = _loadFixture(0);
         publicMock.setQuota(wallet, 10_000 * 1e18); // ample NFT headroom
         binding.setActive(wallet, minerA);
@@ -1141,6 +1166,7 @@ contract B20MiningTest is Test {
     /// exhausted and the remainder of the *same* proof's reward is drawn
     /// from base quota.
     function test_submitProof_nftExhaustionSpillsIntoBase() public {
+        _ensureOpened(mining);
         (address wallet, uint256 allocation, bytes32[] memory proof) = _loadFixture(0);
         uint256 smallNft = 10 * 1e18; // less than DEFAULT_REWARD (312.5e18)
         publicMock.setQuota(wallet, smallNft);
