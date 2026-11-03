@@ -5,7 +5,8 @@ mining, NFTs, claims, the MINER pool and burns), the Launchpad, and the mining
 wallet.
 
 - Website: [b20miner.xyz](https://b20miner.xyz)
-- Docs: [docs.b20miner.xyz](https://docs.b20miner.xyz)
+- Docs: [docs.b20miner.xyz](https://docs.b20miner.xyz) · [contracts reference](https://docs.b20miner.xyz/reference/contracts/)
+- X: [@b20miner](https://x.com/b20miner)
 
 ## Layout
 
@@ -86,8 +87,10 @@ Launchpad and mining wallet:
 | MinerWallet (implementation) | `0xe204a4E0E3Ee7697d3c52614C6e52E6e9CC35d8D` |
 | MinerRelay | `0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165` |
 
-The source of these contracts is verified on [Sourcify](https://sourcify.dev).
-The tag `sepolia-v19` marks the commit they were deployed from. The swap
+The source of these contracts is verified on [Sourcify](https://sourcify.dev)
+(exact match). MINER and tMINER are Base's native B20 assets, created through
+Base's B20 factory, so they have no Solidity source of their own. The tag
+`sepolia-v19` marks the commit they were deployed from. The swap
 router and the relay contract are unchanged from earlier deployments and
 were reused. Earlier mining wallet factories, including
 `0xe1939bc8B7c96Ec7aDc37c1472c02f09792bAE5C` and
@@ -106,8 +109,11 @@ base-forge build --use 0.8.35 --skip test --skip script
 ## Security
 
 Internal audit — passed (2 Nov 2026): [report](audits/2026-11-02-internal-audit.md).
-The audit was done by the B20MINER team, not by an independent firm. To
-report a security problem, see [SECURITY.md](SECURITY.md).
+The audit was done by the B20MINER team, not by an independent firm. It ran
+on the v17 deployment; the deployment above is the same source with two
+changes, both reviewed in the report's appendices: the `B20Mining` opening
+gate and the new `TestMinerLauncher`. To report a security problem, see
+[SECURITY.md](SECURITY.md).
 
 ## License
 

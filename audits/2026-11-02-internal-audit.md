@@ -15,13 +15,23 @@ An earlier internal review on 31 October 2026 found a High issue in
 one transaction). It was fixed before the v17 deployment; the fix and its
 tests are part of this code.
 
+**Which deployment this covers.** The addresses in §3 are the v17 deployment
+the audit was run on. The current Base Sepolia deployment (v19, 3 Nov 2026,
+tag `sepolia-v19`, addresses in the [README](../README.md)) is built from the
+same source with two changes, each reviewed below: the `B20Mining` opening
+gate (Appendix A) and the new test-network-only `TestMinerLauncher`
+(Appendix B). Every other contract is unchanged; the v19 mining wallet runs
+the fixed v13 wallet code.
+
 ## 1. Scope
 
-- The 21 contracts of the Base Sepolia v17 deployment listed in the
-  [README](../README.md), plus the libraries they use (`B20PoW`,
-  `B20SnapshotMerkle`) and the MINER B20 token (Base's native B20 asset).
+- The 21 contracts of the Base Sepolia v17 deployment (addresses in §3),
+  plus the libraries they use (`B20PoW`, `B20SnapshotMerkle`) and the MINER
+  B20 token (Base's native B20 asset).
 - Out of scope: OpenZeppelin, Uniswap v4-core and v4-periphery, base-std
   (pinned upstream releases), and code that is not deployed.
+- Not covered: off-chain code (relay, indexer, apps), which had its own
+  internal security review and is not part of this report.
 - **Same code as on chain.** The runtime bytecode metadata hash (which hashes
   the exact source and compiler settings) of every local build equals the
   deployed code: 21/21 match. The two new wallet contracts (v13) match too.
@@ -144,12 +154,15 @@ What remains (accepted): a stolen key can still submit failing orders,
 refunded at the capped price (about 0.0000016 ETH each at today's Base fees),
 until the owner revokes the key. It never gains from them.
 
-### M-2 — Privileged keys are single accounts on Base Sepolia (Medium, key management)
+### M-2 — Privileged keys are single accounts, not multisigs (Medium, key management) — accepted
 
-The roles in §4 are plain accounts on the test network. On Base Mainnet they
-become Safe multisigs. A leaked `B20CommunityVault.MANAGER` key could route
-the airdrop pot over two rounds (about 62 days, each round public 48 hours in
-advance); the multisig and alerts on `RoundQueued` cover this.
+The roles in §4 are single accounts (no multisig), on the test network and,
+as decided on 2 November 2026, on Base Mainnet too: there each role is a new
+account used only for that role. A leaked
+`B20CommunityVault.MANAGER` key could route the airdrop pot over two rounds
+(about 62 days). Every round (`RoundQueued`) and every ecosystem transfer
+(`TransferQueued`) is public on chain for 48 hours before it can run, so a
+misuse can be seen before it happens. Accepted risk for the launch.
 
 ### L-1 — The guardian can move the direct-launch price (Low, trust)
 
@@ -191,13 +204,6 @@ money is involved.
 Miners are counted by owner address, so one person can use ten. They still
 pay the mining fees and do the work. The docs say "10 miner addresses", not
 10 people.
-
-### Not covered
-
-- Off-chain code (relay, indexer, apps) had its own internal security review
-  and is not part of this report.
-- The test network setup (plain accounts for the roles in §4) is not the
-  mainnet setup.
 
 ### I-6 — Unofficial pools for a Launchpad token can exist (Info)
 
@@ -243,12 +249,14 @@ elsewhere. The apps and the indexer use only the official pool.
 ## 7. Before Base Mainnet
 
 - Only the fixed wallet (v13 code) is deployed on Base Mainnet.
-- The privileged roles in §4 become Safe multisigs.
+- The privileged roles in §4 are new single-purpose accounts (M-2).
+- `TestMinerLauncher` and tMINER exist only on Base Sepolia; the launcher
+  refuses any other chain.
 - The Low and Info items are addressed in each contract's next version.
 
 Report a security problem privately: see [SECURITY.md](../SECURITY.md).
 
-## Appendix B — Change after the audit: opening gate (2 Nov 2026)
+## Appendix A — Change after the audit: opening gate (2 Nov 2026)
 
 Owner decision (2 Nov 2026): NFT minting and allocation confirmation open
 only with `openMining()`, not at deployment, so the published mainnet
@@ -269,3 +277,29 @@ integration and both rehearsal fork tests re-ordered to open first;
 contract suite 497/498 (the one failure is `B20Receivers.fork`, which reads
 a live v17 Sepolia holder and is environment-dependent, unrelated).
 Verdict for `B20Mining`: PASS (unchanged).
+
+## Appendix B — New for v19: `TestMinerLauncher` (3 Nov 2026)
+
+Base Sepolia only. The test network Launchpad pays its MINER share into
+tMINER, a test token, because the real MINER is mined on Base Mainnet.
+`TestMinerLauncher` (`0x40FFD8f1C061fe555578599C138b64cC2b1B10A1`) sets
+tMINER up in its constructor, in one transaction, and has no function
+afterwards:
+
+- reverts `WrongChain` on any chain but Base Sepolia (84532) and `ZeroAmount`
+  without ETH;
+- deploys `MinerBurner` and `MinerPool` unchanged (the audited code above)
+  and is the pool's only `FINALIZER`;
+- creates tMINER through Base's native B20 factory with no admin, the supply
+  cap equal to the minted supply, the whole supply minted to the pool and
+  `BURN_ROLE` to the burner only, so nobody can mint again;
+- opens the pool once with the sent ETH at 1 ETH = 6,000,000 tMINER and
+  checks that the created token address is the expected one.
+
+Review (same team, 3 Nov 2026): no stored ETH, no owner, no callable
+function, no `delegatecall`; the pool and burner code is the audited code,
+and `open` cannot run a second time. Tests:
+`test/launchpad/TestMinerLauncher.fork.t.sol` on a Base Sepolia fork, 6/6
+passed (supply and price, only the burner burns and nobody mints, `open`
+cannot run again, buys and sales with sale fees burned, Launchpad ETH as buy
+support, chain and ETH checks). Verdict for `TestMinerLauncher`: PASS.
