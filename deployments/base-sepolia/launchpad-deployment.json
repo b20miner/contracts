@@ -5,14 +5,14 @@
   "product": "b20-miner-launchpad",
   "design": "docs/B20_MINER_LAUNCHPAD_CONTRACTS_V1.md 1.68 (v16)",
   "deployer": "0x63f0632a616eb7cc89C95C1b9c044C6C6c6Cc46e",
-  "firstNonce": 20,
+  "firstNonce": 27,
   "checksPassed": 51,
   "contracts": {
-    "launchpadFactory": "0x95814C2FF4005FcA3545c0a9d9aA20DA92f7644a",
-    "miningCampaignImplementation": "0x34b8f8184aA6E966Ff9fdb91F7d5B1E48bBDc863",
-    "campaignPoolImplementation": "0x22def2894055DFD2A72A5bc62a956ad20f323918",
-    "positionLocker": "0x95dEdc31De8Ce15447d663db6232436b694F711c",
-    "launchpadHook": "0x6789bC7845e85B3d49fB01f102b1768dF079A0Cc",
+    "launchpadFactory": "0xEdB4a5Cf38f7d07ee5C2EABf80b229fb41B3Db81",
+    "miningCampaignImplementation": "0x1b8330821c6e2E365Dcf2ca68b9F14967F61B085",
+    "campaignPoolImplementation": "0xd0Cb55E84021705BFf11d27C4182ca7f9d738A2b",
+    "positionLocker": "0x5274b1d39DEad14394FB3Cdc620f2B0AB1932cF0",
+    "launchpadHook": "0x4240077Cb68b2b34a18FcAd26B8C0B054FfB60cC",
     "feeRouter": "0xD5C1Ebbe65c7478e1353ED8FDAE796331f357eEE",
     "minerPool": "0xD5C1Ebbe65c7478e1353ED8FDAE796331f357eEE"
   },
@@ -25,8 +25,8 @@
   "parameters": {
     "platformTreasury": "0xc4B142895A3B3bf86e83E5468F0744c7bEa29012",
     "guardian": "0xc58d72C20d33aE509672277914be119B6F99e5C5",
-    "ethUsdPriceCents": 225392,
-    "creationFeeWei": "1331014410449351",
+    "ethUsdPriceCents": 222209,
+    "creationFeeWei": "1350080329779622",
     "creationFee": {
       "usdCents": 300,
       "source": "Chainlink ETH/USD",
@@ -35,11 +35,11 @@
         500,
         20000
       ],
-      "fallbackWei": "1331014410449351"
+      "fallbackWei": "1350080329779622"
     },
     "proofFeeWei": "100000000000000",
     "powTarget": "6901746346790563787434755862277025452451108972170386555162524223799295",
-    "hookSalt": "0x000000000000000000000000000000000000000000000000000000000000040a",
+    "hookSalt": "0x000000000000000000000000000000000000000000000000000000000000076e",
     "hookFlags": "0x20cc",
     "antiSnipe": {
       "instantLaunch": "creator option",
@@ -70,7 +70,7 @@
       "setter": "setDirectLaunchFdvWei",
       "minWei": "250000000000000000",
       "maxWei": "10000000000000000000",
-      "initialWei": "2218357350748917441"
+      "initialWei": "2250133882966036479"
     },
     "tokensPerEthAtOneBillion": "100000000",
     "tokensPerProof": "10000",

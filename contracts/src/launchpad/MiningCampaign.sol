@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {B20Constants} from "base-std/lib/B20Constants.sol";
@@ -70,6 +71,9 @@ import {ICampaignToken, IMiningCampaignSettlement} from "./interfaces/ILaunchpad
 /// `MINT_ROLE` for good. Difficulty and price are unchanged.
 contract MiningCampaign is IMiningCampaignSettlement, ReentrancyGuard {
     using SafeERC20 for ICampaignToken;
+
+    /// @dev `InvalidReceiver(address)`, the B20 precompile's refusal of a receiver.
+    bytes4 internal constant INVALID_RECEIVER = 0x9cfea583;
 
     enum Status {
         Active,
@@ -174,6 +178,9 @@ contract MiningCampaign is IMiningCampaignSettlement, ReentrancyGuard {
     error AlreadyOpened();
     error NotOpened();
     error ZeroOwner();
+    /// @notice Denim (Base, 5 Nov 2026): a B20 token refuses its own address
+    /// as a receiver, so that owner could never be paid (ROADMAP 3.312).
+    error TokenOwner();
     error StaleChallenge(bytes32 expected, bytes32 current);
     error InvalidProof();
     error SharesNotAscending(uint256 index);
@@ -220,6 +227,9 @@ contract MiningCampaign is IMiningCampaignSettlement, ReentrancyGuard {
     event Claimed(address indexed owner, uint256 amount, uint256 claimedTotal);
     /// @notice K63: `distribute` has served `served` of `owners` owners.
     event Distributed(uint256 served, uint256 owners);
+    /// @notice The token refused this owner as a receiver (`InvalidReceiver`):
+    /// `distribute` moves on, and the amount stays here for `burnUnclaimed`.
+    event DeliveryRefused(address indexed owner, uint256 amount);
     event UnclaimedBurned(uint256 amount);
 
     /// @dev The implementation itself can never be initialized; only clones.
@@ -418,6 +428,7 @@ contract MiningCampaign is IMiningCampaignSettlement, ReentrancyGuard {
         if (block.timestamp >= end) revert WindowClosed();
         if (status != Status.Active) revert NotActive();
         if (owner == address(0)) revert ZeroOwner();
+        if (owner == address(token)) revert TokenOwner();
 
         uint256 reward = _checkedReward(owner);
 
@@ -453,6 +464,7 @@ contract MiningCampaign is IMiningCampaignSettlement, ReentrancyGuard {
         if (block.timestamp >= end) revert WindowClosed();
         if (status != Status.Active) revert NotActive();
         if (owner == address(0)) revert ZeroOwner();
+        if (owner == address(token)) revert TokenOwner();
 
         uint256 reward = _checkedReward(owner);
 
@@ -628,8 +640,12 @@ contract MiningCampaign is IMiningCampaignSettlement, ReentrancyGuard {
             if (amount == 0) continue;
             uint256 total = claimedOf[owner] + amount;
             claimedOf[owner] = total;
+            if (!_deliver(owner, amount)) {
+                claimedOf[owner] = total - amount;
+                emit DeliveryRefused(owner, amount);
+                continue;
+            }
             emit Claimed(owner, amount, total);
-            token.safeTransfer(owner, amount);
         }
         served = stop - distributedCount;
         distributedCount = stop;
@@ -658,6 +674,23 @@ contract MiningCampaign is IMiningCampaignSettlement, ReentrancyGuard {
         uint256 amount = token.balanceOf(address(this));
         emit UnclaimedBurned(amount);
         if (amount > 0) token.burn(amount);
+    }
+
+    /// @dev `distribute`'s transfer. Denim (ROADMAP 3.312): a receiver the
+    /// token refuses (`InvalidReceiver`) must not stop the opening for every
+    /// other owner, so only that exact refusal returns false; any other
+    /// failure (out of gas included, which returns no data) reverts as
+    /// before, so a caller cannot make an owner be skipped by the gas it sends.
+    function _deliver(address owner, uint256 amount) internal returns (bool) {
+        (bool ok, bytes memory ret) = address(token).call(abi.encodeCall(IERC20.transfer, (owner, amount)));
+        if (ok) {
+            if (ret.length != 0 && !abi.decode(ret, (bool))) revert SafeERC20.SafeERC20FailedOperation(address(token));
+            return true;
+        }
+        if (ret.length >= 4 && bytes4(ret) == INVALID_RECEIVER) return false;
+        assembly ("memory-safe") {
+            revert(add(ret, 0x20), mload(ret))
+        }
     }
 
     function _sendEth(address to, uint256 amount) internal {

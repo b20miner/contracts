@@ -40,7 +40,9 @@ the public RPCs. They place mock B20 code at the native B20 address, which
 
 ## Base Sepolia deployment
 
-Test network deployment of 3 November 2026. On Base Sepolia the mining and
+Test network deployment of 3 November 2026; the Launchpad and the mining
+wallet factory were redeployed on 6 November 2026 (v20) for Base's Denim
+upgrade. On Base Sepolia the mining and
 claim windows are 1 day each; on Base they are 15 days.
 
 MINER genesis (mined on Base mainnet at launch; this copy is the test
@@ -77,24 +79,25 @@ Launchpad and mining wallet:
 
 | Contract | Address |
 | --- | --- |
-| LaunchpadFactory | `0x95814C2FF4005FcA3545c0a9d9aA20DA92f7644a` |
-| MiningCampaign (implementation) | `0x34b8f8184aA6E966Ff9fdb91F7d5B1E48bBDc863` |
-| CampaignPool (implementation) | `0x22def2894055DFD2A72A5bc62a956ad20f323918` |
-| PositionLocker | `0x95dEdc31De8Ce15447d663db6232436b694F711c` |
-| LaunchpadHook | `0x6789bC7845e85B3d49fB01f102b1768dF079A0Cc` |
+| LaunchpadFactory | `0xEdB4a5Cf38f7d07ee5C2EABf80b229fb41B3Db81` |
+| MiningCampaign (implementation) | `0x1b8330821c6e2E365Dcf2ca68b9F14967F61B085` |
+| CampaignPool (implementation) | `0xd0Cb55E84021705BFf11d27C4182ca7f9d738A2b` |
+| PositionLocker | `0x5274b1d39DEad14394FB3Cdc620f2B0AB1932cF0` |
+| LaunchpadHook | `0x4240077Cb68b2b34a18FcAd26B8C0B054FfB60cC` |
 | LaunchpadSwapRouter | `0xb817581D358D6F12a5A789b25CE263694C04eaC3` |
-| MinerWalletFactory | `0x3b4Ed45Df443Ca1714B7F584538C4dF8b8472984` |
-| MinerWallet (implementation) | `0xe204a4E0E3Ee7697d3c52614C6e52E6e9CC35d8D` |
+| MinerWalletFactory | `0x07C276fa7eC43c5dCf3ddEe9c2718Ad3EFB973C0` |
+| MinerWallet (implementation) | `0xd1e34c56F1e02b5bf40231cd885Fb69e9f1Fc2eb` |
 | MinerRelay | `0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165` |
 
 The source of these contracts is verified on [Sourcify](https://sourcify.dev)
 (exact match). MINER and tMINER are Base's native B20 assets, created through
 Base's B20 factory, so they have no Solidity source of their own. The tag
-`sepolia-v19` marks the commit they were deployed from. The swap
+`sepolia-v20` marks the commit they were deployed from (the MINER genesis
+contracts are unchanged since `sepolia-v19`). The swap
 router and the relay contract are unchanged from earlier deployments and
 were reused. Earlier mining wallet factories, including
-`0xe1939bc8B7c96Ec7aDc37c1472c02f09792bAE5C` and
-`0xfbFF0386BbC2E1099c691BeBd8Fb56b1Df0d66D5`, stay on chain; the apps let
+`0x3b4Ed45Df443Ca1714B7F584538C4dF8b8472984` and
+`0xe1939bc8B7c96Ec7aDc37c1472c02f09792bAE5C`, stay on chain; the apps let
 their wallets withdraw only.
 
 To rebuild the deployed bytecode (metadata hash included), compile the

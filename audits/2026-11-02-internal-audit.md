@@ -16,12 +16,13 @@ one transaction). It was fixed before the v17 deployment; the fix and its
 tests are part of this code.
 
 **Which deployment this covers.** The addresses in §3 are the v17 deployment
-the audit was run on. The current Base Sepolia deployment (v19, 3 Nov 2026,
-tag `sepolia-v19`, addresses in the [README](../README.md)) is built from the
-same source with two changes, each reviewed below: the `B20Mining` opening
-gate (Appendix A) and the new test-network-only `TestMinerLauncher`
-(Appendix B). Every other contract is unchanged; the v19 mining wallet runs
-the fixed v13 wallet code.
+the audit was run on. The current Base Sepolia deployment (v20, 6 Nov 2026,
+tag `sepolia-v20`, addresses in the [README](../README.md)) is built from the
+same source with three changes, each reviewed below: the `B20Mining` opening
+gate (Appendix A), the new test-network-only `TestMinerLauncher`
+(Appendix B) and the `MiningCampaign` fix for Base's Denim upgrade
+(Appendix C). Every other contract is unchanged; the v20 mining wallet runs
+the fixed v13 wallet code, trusting the v20 Launchpad.
 
 ## 1. Scope
 
@@ -303,3 +304,39 @@ and `open` cannot run a second time. Tests:
 passed (supply and price, only the burner burns and nobody mints, `open`
 cannot run again, buys and sales with sale fees burned, Launchpad ETH as buy
 support, chain and ETH checks). Verdict for `TestMinerLauncher`: PASS.
+
+## Appendix C — Base Denim follow-up: Launchpad v20 (6 Nov 2026)
+
+Base's Denim upgrade (Base Sepolia 21 Oct, Base Mainnet 5 Nov 2026) makes a
+B20 token refuse a transfer to its own address with `InvalidReceiver`. The
+2 Nov receiver check listed the token's own address as accepted; it is now
+refused, and `test/audit/B20Receivers.fork.t.sol` checks that.
+
+**Finding (Critical, fixed in v20).** `MiningCampaign.submitProof` and
+`submitShares` accepted the token itself as an owner. Under Denim,
+`CampaignPool.finalize` and `MiningCampaign.distribute` would then revert at
+that owner every time, so the token's pool could never open. Shown on a
+Base Sepolia fork with the native B20 token:
+`test/audit/DenimTokenOwner.fork.t.sol`.
+
+**Fix.**
+
+- `submitProof` and `submitShares` revert `TokenOwner()` when the owner is
+  the token.
+- `distribute` skips an owner only when the token refuses the transfer with
+  `InvalidReceiver`. It emits `DeliveryRefused`, leaves the share unclaimed
+  (burned later by `burnUnclaimed`) and moves on. Any other failure, and a
+  failure without revert data (what running out of gas looks like), still
+  reverts, so the caller's gas cannot make an owner be skipped.
+
+Tests: `test/launchpad/MiningCampaignDenim.t.sol` (token cannot be an owner;
+a refused owner is skipped and its share burns; other failures revert; a
+failure without data reverts; a gas sweep shows every served owner was
+paid) and the fork test above. In this repository: 394/394 unit tests, and
+the audit fork tests 27/27 on Base Sepolia.
+The genesis contracts are not affected: they do not push tokens to a list
+of owners. `MinerPool` accepts one bid per block, and blocks are now 0.2 s,
+but its main limits (the 10-minute window and the drift bound) are measured
+in time, so they are unchanged.
+
+Verdict for `MiningCampaign` v20: PASS.

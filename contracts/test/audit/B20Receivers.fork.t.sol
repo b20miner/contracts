@@ -13,10 +13,11 @@ interface IToken {
 /// receiver the token refuses would stop distribution (and the pool's opening)
 /// for good. Runs against live Base Sepolia (base-forge, real precompile).
 contract B20ReceiversForkTest is Test {
-    // 3 Nov 2026: the v17 MINETEST holder sold out, so the sender is now the
-    // live Sepolia genesis's claim vault, holding MINER (deployer v15).
+    // 3 Nov 2026: the v17 MINETEST holder sold out, so the sender was the
+    // live Sepolia genesis's claim vault; 5 Nov 2026 burnUnclaimed emptied it,
+    // so since 6 Nov 2026 the sender is the Uniswap v4 PoolManager (holds MINER).
     IToken constant TOKEN = IToken(0xb200000000000000000000f05e939E87Fc68e8e5); // MINER (3 Nov 2026 genesis)
-    address constant HOLDER = 0x34018C4b59903946746d5FdDA4443826957d5bC9; // its B20ClaimVault
+    address constant HOLDER = 0x05E73354cFDd6745C338b50BcFDfA3Aa6fA03408; // Base Sepolia v4 PoolManager
     address constant CAMPAIGN = 0x15C908c3A5C38e8Ba3aE595EaC1A2A0782Ff6C4A;
     address constant MINER = 0xb200000000000000000000c9FEC3181Ce714dEa9; // a retired MINER
 
@@ -31,9 +32,12 @@ contract B20ReceiversForkTest is Test {
 
     function test_receivers() public {
         assertGt(TOKEN.balanceOf(HOLDER), 10);
-        // Only address(0) fails (checked live 2 Nov 2026), so no owner can stop distribute.
+        // 2 Nov 2026 only address(0) failed. Since Denim (Sepolia 21 Oct, mainnet
+        // 5 Nov 2026) the token's own address fails too (InvalidReceiver), checked
+        // live on Sepolia 6 Nov 2026: one proof for owner = token stops
+        // MiningCampaign.distribute (test/audit/DenimTokenOwner.fork.t.sol, ROADMAP 3.310).
         assertTrue(_try(HOLDER), "self");
-        assertTrue(_try(address(TOKEN)), "token itself");
+        assertFalse(_try(address(TOKEN)), "token itself is refused since Denim");
         assertTrue(_try(MINER), "another B20 (MINER)");
         assertTrue(_try(0xB20f000000000000000000000000000000000000), "B20 factory precompile");
         assertTrue(_try(CAMPAIGN), "campaign");

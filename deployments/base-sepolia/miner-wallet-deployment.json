@@ -7,13 +7,13 @@
   "deployer": "0x63f0632a616eb7cc89C95C1b9c044C6C6c6Cc46e",
   "checksPassed": 13,
   "contracts": {
-    "minerWalletFactory": "0x3b4Ed45Df443Ca1714B7F584538C4dF8b8472984",
-    "minerWalletImplementation": "0xe204a4E0E3Ee7697d3c52614C6e52E6e9CC35d8D",
+    "minerWalletFactory": "0x07C276fa7eC43c5dCf3ddEe9c2718Ad3EFB973C0",
+    "minerWalletImplementation": "0xd1e34c56F1e02b5bf40231cd885Fb69e9f1Fc2eb",
     "minerRelay": "0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165"
   },
   "dependencies": {
     "b20Mining": "0x1d94eE4CfdA776CeeD4625583E17104592D5e2B0",
-    "launchpadFactory": "0x95814C2FF4005FcA3545c0a9d9aA20DA92f7644a"
+    "launchpadFactory": "0xEdB4a5Cf38f7d07ee5C2EABf80b229fb41B3Db81"
   },
   "parameters": {
     "model": "relayed-orders",

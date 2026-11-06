@@ -1,47 +1,47 @@
 {
   "schemaVersion": 1,
-  "purpose": "B20 Miner mining wallet contract on Base Sepolia, relayed-orders version, factory v15 (3 Nov 2026): the v14 code trusting the same genesis B20Mining and Launchpad v19.",
+  "purpose": "B20 Miner mining wallet contract on Base Sepolia, relayed-orders version, factory v16 (6 Nov 2026): the v15 code trusting the same genesis B20Mining and Launchpad v20.",
   "network": "base-sepolia",
   "chainId": 84532,
-  "broadcastCompletedAt": "2026-11-03T00:46:44Z",
+  "broadcastCompletedAt": "2026-11-06T16:25:39Z",
   "deployer": "0x63f0632a616eb7cc89C95C1b9c044C6C6c6Cc46e",
   "deployerKeystore": "b20-sepolia-deployer-v15",
-  "firstNonce": 25,
+  "firstNonce": 32,
   "blockRange": {
-    "first": 53724670,
-    "last": 53724670
+    "first": 55302352,
+    "last": 55302352
   },
   "actualDeploymentCostWei": {
-    "l2Execution": "27189792000000",
-    "l1Data": "22178574",
-    "total": "27189814178574"
+    "l2Execution": "27189864000000",
+    "l1Data": "8686",
+    "total": "27189864008686"
   },
-  "gasUsed": 4531632,
+  "gasUsed": 4531644,
   "transactions": [
     {
       "contract": "MinerWalletFactory",
-      "address": "0x3b4ed45df443ca1714b7f584538c4df8b8472984",
-      "transactionHash": "0x40f30079016d56cf7d975888edc36eebedfe1f0e3dcd90ac59cf07f3b9dc05d3",
-      "block": 53724670,
-      "nonce": 25,
+      "address": "0x07c276fa7ec43c5dcf3ddee9c2718ad3efb973c0",
+      "transactionHash": "0x6c776027054ac0ea1ab3e0dfcfba1c1dd45045f309dee74f63f5c9f2fdfd3b28",
+      "block": 55302352,
+      "nonce": 32,
       "status": "success",
-      "gasUsed": 4531632,
+      "gasUsed": 4531644,
       "alsoCreated": [
         {
           "contract": "MinerWallet",
-          "address": "0xe204a4e0e3ee7697d3c52614c6e52e6e9cc35d8d"
+          "address": "0xd1e34c56f1e02b5bf40231cd885fb69e9f1fc2eb"
         }
       ]
     }
   ],
   "contracts": {
-    "minerWalletFactory": "0x3b4Ed45Df443Ca1714B7F584538C4dF8b8472984",
-    "minerWalletImplementation": "0xe204a4E0E3Ee7697d3c52614C6e52E6e9CC35d8D",
+    "minerWalletFactory": "0x07C276fa7eC43c5dCf3ddEe9c2718Ad3EFB973C0",
+    "minerWalletImplementation": "0xd1e34c56F1e02b5bf40231cd885Fb69e9f1Fc2eb",
     "minerRelay": "0xB486f2293C5D62A52CeD0D4481Eb7fd2eb64C165"
   },
   "dependencies": {
     "b20Mining": "0x1d94eE4CfdA776CeeD4625583E17104592D5e2B0",
-    "launchpadFactory": "0x95814C2FF4005FcA3545c0a9d9aA20DA92f7644a"
+    "launchpadFactory": "0xEdB4a5Cf38f7d07ee5C2EABf80b229fb41B3Db81"
   },
   "parameters": {
     "model": "relayed-orders",
@@ -64,7 +64,7 @@
   "verification": {
     "checksDuringRun": 13,
     "checksFromLiveChain": 13,
-    "checksNote": "verifyRecorded() on 2026-11-03 from https://sepolia.base.org: 13/13."
+    "checksNote": "verifyRecorded() on 2026-11-06 from https://sepolia.base.org: 13/13."
   },
   "supersedes": [
     {
@@ -136,6 +136,11 @@
       "record": "miner-wallet-deployment-record-v14.json",
       "minerWalletFactory": "0xe1939bc8B7c96Ec7aDc37c1472c02f09792bAE5C",
       "reason": "trusts Launchpad v18, retired for v19 (tMINER)"
+    },
+    {
+      "record": "miner-wallet-deployment-record-v15.json",
+      "minerWalletFactory": "0x3b4Ed45Df443Ca1714B7F584538C4dF8b8472984",
+      "reason": "trusts Launchpad v19; v16 trusts Launchpad v20 (Denim fix)"
     }
   ],
   "reused": {
