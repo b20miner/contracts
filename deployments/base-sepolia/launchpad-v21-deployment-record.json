@@ -1,75 +1,75 @@
 {
   "schemaVersion": 1,
-  "purpose": "B20 Miner Launchpad v20 on Base Sepolia: v19 plus the Denim fix in MiningCampaign (owner = token reverts TokenOwner; distribute skips only an owner the token refuses with InvalidReceiver, DeliveryRefused), ROADMAP 3.312-3.315; MINER share still into tMINER's open MinerPool.",
+  "purpose": "B20 Miner Launchpad v21 on Base Sepolia: v20 plus the whole creation fee to the platform treasury (owner, 9 Nov 2026; v16-v20 sent half to MINER liquidity), ROADMAP 3.437-3.438; trading-fee MINER share still into tMINER's open MinerPool.",
   "network": "base-sepolia",
   "chainId": 84532,
-  "broadcastCompletedAt": "2026-11-06T16:23:14Z",
+  "broadcastCompletedAt": "2026-11-09T10:44:29Z",
   "deployer": "0x63f0632a616eb7cc89C95C1b9c044C6C6c6Cc46e",
   "deployerKeystore": "b20-sepolia-deployer-v15",
-  "firstNonce": 27,
+  "firstNonce": 33,
   "blockRange": {
-    "first": 55301606,
-    "last": 55301628
+    "first": 56495978,
+    "last": 56496001
   },
   "actualDeploymentCostWei": {
-    "l2Execution": "111458292000000",
-    "l1Data": "35050",
-    "total": "111458292035050"
+    "l2Execution": "111261024000000",
+    "l1Data": "36362",
+    "total": "111261024036362"
   },
-  "gasUsed": 18576382,
+  "gasUsed": 18543504,
   "transactions": [
     {
       "contract": "MiningCampaign",
-      "address": "0x1b8330821c6e2e365dcf2ca68b9f14967f61b085",
-      "transactionHash": "0x1c9d7ef3623cded5e06dc804cb9fab4510e44d48cd9542ed4b73269252f25fb7",
-      "block": 55301606,
-      "nonce": 27,
+      "address": "0x4ea0854f35386374cbd95ee8cb93d4872ecc66df",
+      "transactionHash": "0x51774423c4994dfc224c715f52e600e5164d4690c788e82e5e01f3ee86b05cd1",
+      "block": 56495978,
+      "nonce": 33,
       "status": "success",
       "gasUsed": 4564626
     },
     {
       "contract": "CampaignPool",
-      "address": "0xd0cb55e84021705bff11d27c4182ca7f9d738a2b",
-      "transactionHash": "0xa5d308583ab891bc3df949ca0507cb815adf7f9cbab540a7131e02c7dc384e29",
-      "block": 55301618,
-      "nonce": 28,
+      "address": "0xc022c81723e74020941f708c285ff02d34d668ea",
+      "transactionHash": "0x87dd177dcad24c8179bf62db47ed27cfda8c423e54bd257b60abd46a1ee85c09",
+      "block": 56495982,
+      "nonce": 34,
       "status": "success",
       "gasUsed": 3225452
     },
     {
       "contract": "PositionLocker",
-      "address": "0x5274b1d39dead14394fb3cdc620f2b0ab1932cf0",
-      "transactionHash": "0xe402e6fe6df7064b38cb15dfd3f5f6b1a7820a9914eb9e37912530ee0d6976b9",
-      "block": 55301621,
-      "nonce": 29,
+      "address": "0x32c2c21ab6309480494ee560781a3088f6df4d73",
+      "transactionHash": "0x9fc10e2ccdbcb5fc876566b518dd4e2c2f61fbb6aebf2a6bcb259d02bf8f22ac",
+      "block": 56495994,
+      "nonce": 35,
       "status": "success",
       "gasUsed": 4109262
     },
     {
       "contract": "LaunchpadHook",
-      "address": "0x4240077cb68b2b34a18fcad26b8c0b054ffb60cc",
-      "transactionHash": "0x4be7387db172c1efab2465475b168de897a4af76f87ae494aceaef3c4a3e7560",
-      "block": 55301624,
-      "nonce": 30,
+      "address": "0x020c63864179faca64ea14146bf18c0981d4e0cc",
+      "transactionHash": "0xf9250468bb8ef2fbe91ebc8dba3e8874301f4de035929ec2b67d921575e6d484",
+      "block": 56495997,
+      "nonce": 36,
       "status": "success",
       "gasUsed": 2612718
     },
     {
       "contract": "LaunchpadFactory",
-      "address": "0xedb4a5cf38f7d07ee5c2eabf80b229fb41b3db81",
-      "transactionHash": "0xcabedbb20559bfb09ad0d4aabbf4a937b2b03a4ef5129c454231a588286e25fb",
-      "block": 55301628,
-      "nonce": 31,
+      "address": "0x86fb02a2862aa55c03efcee8b52291cf493b4b68",
+      "transactionHash": "0xc0cdf50d292173cfd87e3df377d9a25db80e2b5500eb6d273b1b52b220a76309",
+      "block": 56496001,
+      "nonce": 37,
       "status": "success",
-      "gasUsed": 4064324
+      "gasUsed": 4031446
     }
   ],
   "contracts": {
-    "launchpadFactory": "0xEdB4a5Cf38f7d07ee5C2EABf80b229fb41B3Db81",
-    "miningCampaignImplementation": "0x1b8330821c6e2E365Dcf2ca68b9F14967F61B085",
-    "campaignPoolImplementation": "0xd0Cb55E84021705BFf11d27C4182ca7f9d738A2b",
-    "positionLocker": "0x5274b1d39DEad14394FB3Cdc620f2B0AB1932cF0",
-    "launchpadHook": "0x4240077Cb68b2b34a18FcAd26B8C0B054FfB60cC",
+    "launchpadFactory": "0x86Fb02A2862AA55C03EfCEe8b52291cf493B4b68",
+    "miningCampaignImplementation": "0x4eA0854f35386374cbd95eE8CB93d4872EcC66df",
+    "campaignPoolImplementation": "0xc022C81723E74020941F708C285Ff02D34D668ea",
+    "positionLocker": "0x32C2c21aB6309480494eE560781A3088f6df4d73",
+    "launchpadHook": "0x020c63864179FACA64ea14146bF18C0981D4e0cC",
     "feeRouter": "0xD5C1Ebbe65c7478e1353ED8FDAE796331f357eEE",
     "minerPool": "0xD5C1Ebbe65c7478e1353ED8FDAE796331f357eEE"
   },
@@ -82,8 +82,8 @@
   "parameters": {
     "platformTreasury": "0xc4B142895A3B3bf86e83E5468F0744c7bEa29012",
     "guardian": "0xc58d72C20d33aE509672277914be119B6F99e5C5",
-    "ethUsdPriceCents": 222209,
-    "creationFeeWei": "1350080329779622",
+    "ethUsdPriceCents": 210505,
+    "creationFeeWei": "1425144295859956",
     "creationFee": {
       "usdCents": 300,
       "source": "Chainlink ETH/USD",
@@ -92,11 +92,11 @@
         500,
         20000
       ],
-      "fallbackWei": "1350080329779622"
+      "fallbackWei": "1425144295859956"
     },
     "proofFeeWei": "100000000000000",
     "powTarget": "6901746346790563787434755862277025452451108972170386555162524223799295",
-    "hookSalt": "0x000000000000000000000000000000000000000000000000000000000000076e",
+    "hookSalt": "0x0000000000000000000000000000000000000000000000000000000000002c46",
     "hookFlags": "0x20cc",
     "antiSnipe": {
       "instantLaunch": "creator option",
@@ -127,7 +127,7 @@
       "setter": "setDirectLaunchFdvWei",
       "minWei": "250000000000000000",
       "maxWei": "10000000000000000000",
-      "initialWei": "2250133882966036479"
+      "initialWei": "2375240493099926367"
     },
     "tokensPerEthAtOneBillion": "100000000",
     "tokensPerProof": "10000",
@@ -191,15 +191,15 @@
   "verification": {
     "checksDuringRun": 51,
     "checksFromLiveChain": 50,
-    "checksNote": "verifyRecorded() re-ran 50 checks against https://sepolia.base.org on 2026-11-06: 50/50 (the run adds the live-feed check). Dry run passed 51 before the broadcast; every address equals the dry run. MiningCampaign implementation bytecode equals the local build."
+    "checksNote": "verifyRecorded() re-ran 50 checks against https://sepolia.base.org on 2026-11-09: 50/50 (the run adds the live-feed check). Dry run passed 51 before the broadcast; every address equals the dry run."
   },
   "genesis": "tminer-deployment-record.json (tMINER 0xb2000000000000000000003c123A342354B84588, MinerPool 0xD5C1Ebbe65c7478e1353ED8FDAE796331f357eEE)",
   "replaces": {
-    "record": "launchpad-v19-deployment-record.json",
-    "launchpadFactory": "0x95814C2FF4005FcA3545c0a9d9aA20DA92f7644a"
+    "record": "launchpad-v20-deployment-record.json",
+    "launchpadFactory": "0xEdB4a5Cf38f7d07ee5C2EABf80b229fb41B3Db81"
   },
   "afterDeploy": [
     "relay keeper: sweep hook fees into tMINER's MinerPool and flush it (RELAYER_MINER_POOL, every 15 minutes)",
-    "MinerWalletFactory v16 (miner-wallet-deployment-record.json) trusts this factory from creation"
+    "MinerWalletFactory v17 (miner-wallet-deployment-record.json) trusts this factory from creation"
   ]
 }

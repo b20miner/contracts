@@ -27,9 +27,10 @@ import {IEthUsdFeed, ILaunchpadOpening, ILaunchpadRegistry, IMinerLiquiditySink}
 ///    of the supply for a 2× opening, 40% for 1×, K55), the pool mints its
 ///    opening, and each gives the mint role up for good; the factory keeps
 ///    no power over the token (v1–v11 minted both reserves here);
-/// 5. takes the creation fee in ETH — half to the platform, half to MINER
-///    liquidity (`FEE_ROUTER`: mainnet `MinerPool`, Base Sepolia
-///    `TestMinerPool`; v1–v15 also took MINER at a 20% discount through a
+/// 5. takes the creation fee in ETH — all of it to the platform (v21, owner
+///    decision 9 November 2026; v16–v20 sent half to MINER liquidity,
+///    `FEE_ROUTER`, which the factory still records but no longer pays —
+///    the hook pays MINER's share of trading fees itself; v1–v15 also took MINER at a 20% discount through a
 ///    V2 TWAP, half of it burned — removed with MINER's V4 pool, owner
 ///    decision 30 October 2026) — and deposits any extra
 ///    ETH in the pool for the creator (K21). The fee is 3 USD at Chainlink's
@@ -151,7 +152,7 @@ contract LaunchpadFactory is ILaunchpadRegistry, ILaunchpadOpening, ReentrancyGu
     address public immutable MINING_IMPL;
     address public immutable POOL_IMPL;
     address public immutable LOCKER;
-    /// @notice Where the MINER-liquidity half of each creation fee goes.
+    /// @notice MINER liquidity sink (v16–v20 got half of each creation fee; v21 pays it nothing, kept for records).
     IMinerLiquiditySink public immutable FEE_ROUTER;
     address public immutable PLATFORM_TREASURY;
     address public immutable GUARDIAN;
@@ -253,9 +254,8 @@ contract LaunchpadFactory is ILaunchpadRegistry, ILaunchpadOpening, ReentrancyGu
         uint256 extra = msg.value - maxFeeWei;
         token = _create(p, extra);
         emit CreationFeePaid(token, msg.sender, false, fee);
-        uint256 toPlatform = fee / 2;
-        Address.sendValue(payable(PLATFORM_TREASURY), toPlatform);
-        FEE_ROUTER.depositMinerLiquidityEth{value: fee - toPlatform}();
+        // v21 (owner, 9 Nov 2026): the whole creation fee is platform revenue; v16–v20 sent half to MINER's pool.
+        Address.sendValue(payable(PLATFORM_TREASURY), fee);
         if (!p.instant) _deposit(token, extra);
         if (maxFeeWei > fee) Address.sendValue(payable(msg.sender), maxFeeWei - fee);
     }

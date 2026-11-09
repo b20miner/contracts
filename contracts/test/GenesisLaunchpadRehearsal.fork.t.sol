@@ -147,7 +147,7 @@ abstract contract GenesisLaunchpadRehearsal is Test {
             g.publicNFT.mint{value: 5 * nftPrice}(5);
         }
 
-        // a Launchpad token while MINER's pool is still closed: its share waits there
+        // a Launchpad token while MINER's pool is still closed: its trading-fee share waits there
         uint256 fee = l.factory.creationFeeWei();
         LaunchpadFactory.CreateParams memory p;
         p.name = "Kedi";
@@ -158,14 +158,14 @@ abstract contract GenesisLaunchpadRehearsal is Test {
         (p.expectedToken,,) = l.factory.predict(CREATOR);
         vm.prank(CREATOR);
         address token = l.factory.create{value: fee}(p, fee);
-        assertEq(address(g.minerPool).balance, fee - fee / 2);
+        assertEq(address(g.minerPool).balance, 0); // v21: the creation fee is all platform revenue
         vm.warp(block.timestamp + 30); // past the opening anti-snipe window
         PoolKey memory key = l.locker.poolKey(token);
         vm.prank(TRADER);
         router.swap{value: 0.5 ether}(key, true, 0.5 ether, 0, block.timestamp);
         l.hook.sweep();
         uint256 waiting = address(g.minerPool).balance;
-        assertGt(waiting, fee - fee / 2);
+        assertGt(waiting, 0);
         g.minerPool.flush(); // nothing to do before the opening
         assertEq(address(g.minerPool).balance, waiting);
         assertFalse(g.minerPool.opened());

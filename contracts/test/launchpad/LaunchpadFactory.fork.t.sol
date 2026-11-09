@@ -209,15 +209,9 @@ contract LaunchpadFactoryForkTest is Test {
         // K56: 400M − 95.41% × 600M / 2 = 113.77M spare tokens at 50M per ETH, minus the 1.5 ETH buffer
         assertEq(pool.depositCapWei(), 0.7754 ether);
 
-        // fee: half to the platform, half waits in the MINER pool as buy support
-        assertEq(TREASURY.balance - treasuryBefore, CREATION_FEE / 2);
-        assertEq(address(minerPool).balance - minerPoolBefore, CREATION_FEE - CREATION_FEE / 2);
-        uint256 addedBefore = minerPool.totalEthAdded();
-        _keeperFlush();
-        assertLe(address(minerPool).balance, 1e6); // rounding dust waits for the next flush
-        assertApproxEqAbs(
-            minerPool.totalEthAdded() - addedBefore, minerPoolBefore + CREATION_FEE - CREATION_FEE / 2, 1e6
-        );
+        // fee (v21): all of it to the platform, nothing to the MINER pool
+        assertEq(TREASURY.balance - treasuryBefore, CREATION_FEE);
+        assertEq(address(minerPool).balance, minerPoolBefore);
     }
 
     /// K65: a proof's gas through the reference B20 (the live precompile
@@ -694,7 +688,7 @@ contract LaunchpadFactoryForkTest is Test {
         LaunchpadFactory.CreateParams memory p = _params();
         vm.prank(CREATOR);
         address token = factory.create{value: fee}(p, fee);
-        assertEq(TREASURY.balance - treasuryBefore, fee / 2);
+        assertEq(TREASURY.balance - treasuryBefore, fee); // v21: all platform revenue
         assertTrue(token != address(0));
     }
 

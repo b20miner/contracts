@@ -16,13 +16,14 @@ one transaction). It was fixed before the v17 deployment; the fix and its
 tests are part of this code.
 
 **Which deployment this covers.** The addresses in §3 are the v17 deployment
-the audit was run on. The current Base Sepolia deployment (v20, 6 Nov 2026,
-tag `sepolia-v20`, addresses in the [README](../README.md)) is built from the
-same source with three changes, each reviewed below: the `B20Mining` opening
+the audit was run on. The current Base Sepolia deployment (v21, 9 Nov 2026,
+tag `sepolia-v21`, addresses in the [README](../README.md)) is built from the
+same source with four changes, each reviewed below: the `B20Mining` opening
 gate (Appendix A), the new test-network-only `TestMinerLauncher`
-(Appendix B) and the `MiningCampaign` fix for Base's Denim upgrade
-(Appendix C). Every other contract is unchanged; the v20 mining wallet runs
-the fixed v13 wallet code, trusting the v20 Launchpad.
+(Appendix B), the `MiningCampaign` fix for Base's Denim upgrade
+(Appendix C) and the creation fee paid in full to the platform
+(Appendix D). Every other contract is unchanged; the v21 mining wallet runs
+the fixed v13 wallet code, trusting the v21 Launchpad.
 
 ## 1. Scope
 
@@ -340,3 +341,25 @@ but its main limits (the 10-minute window and the drift bound) are measured
 in time, so they are unchanged.
 
 Verdict for `MiningCampaign` v20: PASS.
+
+## Appendix D — Creation fee to the platform: Launchpad v21 (9 Nov 2026)
+
+**Change.** `LaunchpadFactory.create` sends the whole creation fee to
+`PLATFORM_TREASURY` with `Address.sendValue`. Up to v20 it sent half to the
+treasury and half to `FEE_ROUTER.depositMinerLiquidityEth` (the MINER
+pool). `FEE_ROUTER` is still stored and checked by the deploy script, but
+`create` no longer calls it. The hook is unchanged: 20% of every trading fee
+still reaches the MINER pool through `sweep`.
+
+**Review.** The fee is computed and refunded exactly as before (the excess
+over `fee` returns to the caller in the same transaction); only the
+recipient of the second half changed. The treasury is an address set at
+deployment, the call happens after every state change of `create`, and the
+factory keeps no ETH. There is one fewer external call, so the
+re-entrancy surface is smaller.
+
+Tests: the factory, deploy-script and genesis rehearsal fork tests now
+expect the treasury to receive the whole fee and the MINER pool nothing at
+creation.
+
+Verdict for `LaunchpadFactory` v21: PASS.
